@@ -1,15 +1,62 @@
+import {
+  Route,
+  Routes,
+} from "react-router-dom";
+
+import CmsLayout from "./components/cms/CmsLayout";
+import DashboardPage from "./pages/cms/DashboardPage";
+import FaqListPage from "./pages/cms/FaqListPage";
+import PlaceholderPage from "./pages/cms/PlaceholderPage";
+
 export default function App() {
   return (
-    <main className="min-h-screen bg-slate-50 p-8">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="text-3xl font-bold text-[#062E6F]">
-          CMS Pusat Bantuan INSW
-        </h1>
+    <Routes>
+      <Route element={<CmsLayout />}>
+        <Route
+          index
+          element={<DashboardPage />}
+        />
 
-        <p className="mt-2 text-slate-600">
-          Kelola kategori, topik, FAQ, panduan, dan tutorial.
-        </p>
-      </div>
-    </main>
+        <Route
+          path="categories"
+          element={
+            <PlaceholderPage title="Kelola Kategori" />
+          }
+        />
+
+        <Route
+          path="subcategories"
+          element={
+            <PlaceholderPage title="Kelola Subkategori" />
+          }
+        />
+
+        <Route
+          path="topics"
+          element={
+            <PlaceholderPage title="Kelola Topik" />
+          }
+        />
+
+        <Route
+          path="faqs"
+          element={<FaqListPage />}
+        />
+
+        <Route
+          path="guides"
+          element={
+            <PlaceholderPage title="Kelola Panduan" />
+          }
+        />
+
+        <Route
+          path="tutorials"
+          element={
+            <PlaceholderPage title="Kelola Tutorial" />
+          }
+        />
+      </Route>
+    </Routes>
   );
 }
