@@ -1,0 +1,598 @@
+{
+    "code": "01",
+    "message": "Sukses",
+    "data": [
+        {
+            "kd_kategori_faq": 25,
+            "ur": "BTKI 2022",
+            "subkategori": [
+                {
+                    "kd_subkategori_faq": 105,
+                    "ur": "Perizinan dan Rekomendasi",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 476,
+                            "header": "SPI kami masih berlaku dengan  HS BTKI 2017 , namun ada perubahan/ korelasi HS 2022. apakah perlu perubahan SPI ?",
+                            "ur": null,
+                            "jawaban": "<p>Tidak perlu revisi jika PI&nbsp;masa berlaku PI masih ada. Untuk pengajuan di PIB silahkan menggunakan HS sesuai BTKI 2022. Sistem INSW dapat membaca korelasi dari BTKI 2017 dan 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-08T18:33:01.957Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 455,
+                            "header": "Apakah ada file pdf mengenai hs code baru BTKI 2022 yang menyertakan informasi persyaratan LS atau PI?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan akses https://www.beacukai.go.id/arsip/lan/BTKI-2022.html&nbsp;</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:27:46.669Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 454,
+                            "header": "LS yang sudah terbit tanggal 31 Maret dengan menggunakan HS Code 2017, tetapi barang sampai sekitar tgl 4 April, apakah perizinannya yang terbit sebelum 1 april tetap berlaku ?",
+                            "ur": null,
+                            "jawaban": "<p>Perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:25:22.983Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 453,
+                            "header": "Pada skep USDFS, di skep masih BTKI 2017. Apakah bisa tetap dipakai, karena HS di PIB sudah menggunakan BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:24:00.572Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 452,
+                            "header": "Apakah lartas, BM, PPH, lartas dan lainnya juga ada perubahan pada BTKI 2022? Apakah detil tsb di BTKI2022 sudah bisa dicek dan bisa dicek di mana ?",
+                            "ur": null,
+                            "jawaban": "<p>Untuk kendala tersebut dapat di konsultasikan ke BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:14:03.615Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 451,
+                            "header": "Pada BTKI 2022, jika terdapat lartas kemenkes yang HS nya berubah. Apahkah dengan pemberlakuan BTKI 2022 importir  harus mengurus lagi yang baru sedangkan izin masih berlaku sampai juli 2022 ?",
+                            "ur": null,
+                            "jawaban": "<p>Izin kemenkes masih berlaku sampai dengan masa berlakunya habis</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:06:14.719Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 450,
+                            "header": "SPI (Surat Persetujuan Impor) yang sudah terbit mengunakan BTKI 2017, apakah SPI tersebut dapat digunakan atau harus  mengajukan perubahan HS mengikuti HS pada BTKI 2022 ",
+                            "ur": null,
+                            "jawaban": "<p>Perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:03:36.399Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 449,
+                            "header": "Jika sudah mendapat ijin rekomendasi PI Besi & Baja, apakah teknis nya mengajukan ke Depdag dengan menggunakan rekomendasi yang ada atau mengulang dari awal sesuai BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Pengajuan PI per tanggal 1 April harus menggunakan BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T19:45:24.842Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 448,
+                            "header": "PI besibaja masih berlaku desember 2022,tapi ternyata ada pergeseran hscode btki2022,diPIBnya kami cantumkan sesuai btki 2022 kah? & apa ada dampak terhadap PI",
+                            "ur": null,
+                            "jawaban": "<p>Perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T19:33:11.376Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 447,
+                            "header": "Apakah ada penambahan izin-izin import terhadap perubahan HS Code tersebut",
+                            "ur": null,
+                            "jawaban": "<p>Perubahan HS code tidak merubah ruang lingkup perizinan / Tata Niaga yang berubah hanyalah kode HS nya</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T19:32:16.375Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 446,
+                            "header": "barang yg hs code nya berubah di BTKI 2022, namun ijin lartas nya sudah terlanjur terbit dg hs code lama sesuai BTKI 2017, apakah ijinnya masih bisa dipakai?",
+                            "ur": null,
+                            "jawaban": "<p>Perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T19:30:52.399Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 431,
+                            "header": "Pertek sudah terbit sebelum 1 April 2022 (menggunakan BTKI 2017) namun HS kami di BTKI 2022 berubah, apakah masih bisa digunakan untuk pengajuan PI ?",
+                            "ur": null,
+                            "jawaban": "<p>ya, masih bisa digunakan, pengajuan PI nya menggunakan HS BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:09:59.149Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 430,
+                            "header": "Apakah pengajuan SSM QC yang diajukan sebelum tgl 31 Maret 2022 yang belum mendapat putusan, ketika pengajuan disetujui akan mengkonversi HS secara otomatis atau di tolak",
+                            "ur": null,
+                            "jawaban": "<p>Aju dokumen yang belum mendapatkan nopen sampai dengan 31 maret pukul 23.00 maka dokumen tersebut akan di reject . Jika PJ mengirimkan ulang AJU dokumen tersebut pastikan tarif PPN sudah tertera 11%</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:09:19.143Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 429,
+                            "header": "Kami sudah mengajukan pertek di portal INSW, apakah untuk permohonan kami akan disetujui atau dibatalkan secara otomatis?",
+                            "ur": null,
+                            "jawaban": "<p>Kebijakan diserahkan kepada pemilik proses bisnis (Kemenperin)</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:08:33.426Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 428,
+                            "header": "Jika sudah mendapat ijin rekomendasi PI Besi & Baja, apakah perlu mengajukan ulang rekomendasi yg ada untuk disesuaikan dengan BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Pengajuan PI per tanggal 1 April harus menggunakan BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:07:37.267Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 427,
+                            "header": "Apakah ada penambahan izin-izin import terhadap perubahan HS Code tersebut?",
+                            "ur": null,
+                            "jawaban": "<p>Perubahan HS code tidak merubah ruang lingkup perizinan / Tata Niaga yang berubah hanyalah kode HS nya</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:02:13.673Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 426,
+                            "header": "Jika perizinan terbit sebelum 1 April 2022 (menggunakan BTKI 2017), namun barang yang diimpor HS Code nya berubah di BTKI 2022, apakah ijinnya masih bisa dipakai?",
+                            "ur": null,
+                            "jawaban": "<p>perizinan yang diterbitkan sebelum 1 april masih tetap berlaku dan dapat digunakan untuk direalisasikan impor / ekspornya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:01:35.984Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 417,
+                            "header": "Bagaimana status permohonan SSm Perizinan yang  sudah terkirim dan belum terbit keputusan ?",
+                            "ur": null,
+                            "jawaban": "<p>Data pengajuan baru atau perubahan atas PI/PE yang terkena dampak perubahan HS yang statusnya sudah terkirim dan belum terbit keputusan dari INATRADE sampai dengan tanggal 31 Maret 2022 akan dilakukan pembatalan secara otomatis oleh Sistem. Pelaku Usaha perlu membuat aju baru untuk pengajuan baru dan pengajuan perubahan.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T18:51:10.977Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 416,
+                            "header": "Bagaimana status permohonan perizinan/rekomendasi yang masih draft?",
+                            "ur": null,
+                            "jawaban": "<p>Data pengajuan baru atau perubahan atas PI/PE yang terkena dampak perubahan HS yang statusnya masih <strong>DRAFT</strong> sampai dengan tanggal 31 Maret 2022 akan dilakukan penghapusan secara otomatis oleh Sistem. Pelaku Usaha perlu membuat aju baru untuk pengajuan baru dan pengajuan perubahan.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T18:49:44.936Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 415,
+                            "header": "Apakah ada downtime untuk implementasi BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Sistem SSm Perizinan akan melakukan penghentian layanan mulai pukul 18.00 di tanggal 31 Maret 2022 s.d. pukul 06.00 WIB tanggal 1 April 2022 untuk persiapan implementasi BTKI 2022.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T18:47:34.013Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 414,
+                            "header": "Sejak kapan seluruh PERIJINAN K/L sudah harus menggunakan kode HS 2022 ?",
+                            "ur": null,
+                            "jawaban": "<p><span style=\"background-color: transparent; color: rgb(0, 0, 0);\">Mulai tanggal 1 April 2022 seluruh </span><strong style=\"background-color: transparent; color: rgb(0, 0, 0);\">perijinan final K/L</strong><span style=\"background-color: transparent; color: rgb(0, 0, 0);\"> </span><strong style=\"background-color: transparent; color: rgb(0, 0, 0);\">yang diterbitkan per tanggal 1 April 2022</strong><span style=\"background-color: transparent; color: rgb(0, 0, 0);\"> dan akan dikirimkan ke sistem INSW </span><strong style=\"background-color: transparent; color: rgb(192, 0, 0);\">sudah harus</strong><span style=\"background-color: transparent; color: rgb(192, 0, 0);\"> </span><span style=\"background-color: transparent; color: rgb(0, 0, 0);\">menggunakan kode HS BTKI 2022. Dengan menggunakan kode HS BTKI 2022 ini, maka sistem INSW akan </span><strong style=\"background-color: transparent; color: rgb(0, 0, 0);\">menolak (reject)</strong><span style=\"background-color: transparent; color: rgb(0, 0, 0);\"> data perijinan yang masih menggunakan kode HS 2017.</span></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T18:38:58.403Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        },
+                        {
+                            "id_pusatbantuan": 413,
+                            "header": "Apakah akan dilakukan perubahan kode HS pada PERIJINAN dan REKOMENDASI yang telah terbit?",
+                            "ur": null,
+                            "jawaban": "<p><span style=\"color: rgb(0, 0, 0); background-color: transparent;\">Data perijinan final (</span>PI, PE, LS Impor, LS Ekspor, V-Legal, SKI BPOM, SPI dan SPE Kemenkes dll) <span style=\"color: rgb(0, 0, 0); background-color: transparent;\">yang masih berlaku dan telah diterbitkan sebelum tanggal </span><strong style=\"color: rgb(0, 0, 0); background-color: transparent;\">1 April 2022 </strong><span style=\"color: rgb(0, 0, 0); background-color: transparent;\">yang belum dilakukan penyesuaian uraian barang dan kode HS sesuai kode HS BTKI 2022, tetap berlaku dan dapat dipergunakan sebagai perijinan dalam rangka impor atau ekspor sampai dengan masa berlaku perizinan tersebut berakhir.</span></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T18:35:19.554Z",
+                            "file": null,
+                            "subkategori_faq": 105
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 106,
+                    "ur": "Modul PIB dan PEB",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 472,
+                            "header": "BC 1.6 masuk menggunakan BTKI 2017 untuk pengeluarannya apakah bisa langsung menggunakan BTKI 2022, atau harus melakukan revisi BC 1.6 terlebih dahulu",
+                            "ur": null,
+                            "jawaban": "<p> Untuk permasalahan tersebut dapat di konsultasikan ke BRAVO BEACUKAI.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-07T00:04:38.852Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 471,
+                            "header": "Bagaimana untuk PIB yang baru mendapatkan response penjaluran dibulan April, sedangkan billing sudah kami bayarkan dibulan Maret ini? apakah akan ada reject?",
+                            "ur": null,
+                            "jawaban": "<p> Untuk permasalahan tersebut dapat di konsultasikan ke BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:44:52.940Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 470,
+                            "header": "Jika Bill of landing sudah final, apakah HS code akan berubah secara otomatis menggunakan BTKI 2022?",
+                            "ur": null,
+                            "jawaban": "<p>Pemberitahuan impor atas barang tersebut apabila disubmit semenjak tanggal 1 april maka harus menggunakan BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:41:51.645Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 469,
+                            "header": "Untuk PIB dengan PPn 11 % apakah perlu diupdate versinya atau secara otomatis sudah terupdate menjadi 11%",
+                            "ur": null,
+                            "jawaban": "<p> Untuk permasalahan tersebut dapat di konsultasikan ke BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:40:25.528Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 468,
+                            "header": "Untuk pengajuan dokumen sebelum tgl 31 maret dan PPn yang tercantum sebelumnya adalah 10 % , apakah terkonversi secara otomatis menjadi 11% jika dokumen yang disetujui issued tgl 1 april ?",
+                            "ur": null,
+                            "jawaban": "<p> Aju dokumen yang belum mendapatkan nopen sampai dengan 31 maret pukul 23.00 maka dokumen tersebut akan di reject . Jika Pengguna Jasa  mengirimkan ulang AJU dokumen tersebut pastikan tarif PPN sudah tertera 11%</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:39:20.053Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 467,
+                            "header": "Terkait PPn terbaru 11% per april 2022, bagaimana dengan billing yg terbit di maret dengan ppn 10% apakah bisa dilakukan pembayaran PIB tanggal 1 April",
+                            "ur": null,
+                            "jawaban": "<p> Jika pembayaran dilakukan per 1 April maka menggunakan tarif PPn yang baru</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:37:04.171Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 436,
+                            "header": "terdapat reject seri barang lartas belum ada, atau \"seri barang skep harus diisi\"",
+                            "ur": null,
+                            "jawaban": "<p>Pastikan sudah menggunakan Modul PIB terbaru</p><p><a href=\"https://www.beacukai.go.id/arsip/pop/update-patch-modul-pib-6-0-13.html\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.beacukai.go.id/arsip/pop/update-patch-modul-pib-6-0-13.html</a></p><p><br></p><p>Silahkan dalam mengisi HS pada PIB mengunakan HS yang ada di BTKI 2022.</p><p><br></p><p>Pastikan sudah melakukan relasi antar seri barang PIB dengan seri barang lartas perizinannya.</p><p>https://bit.ly/LNSW_Seri_izin</p><p><br></p><p><a href=\"https://i.imgur.com/aWYhGBk.png\" rel=\"noopener noreferrer\" target=\"_blank\">https://i.imgur.com/aWYhGBk.png</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-03T01:04:23.541Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 435,
+                            "header": "Bagaimana pengisian HS 2020 di modul PIB ?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan dalam mengisi HS pada PIB mengunakan HS yang ada di BTKI 2022.</p><p>pastikan sudah melakukan relasi antar seri barang PIB dengan seri barang lartas perizinannya. </p><p><br></p><p><a href=\"https://i.imgur.com/aWYhGBk.png\" rel=\"noopener noreferrer\" target=\"_blank\">https://i.imgur.com/aWYhGBk.png</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-03T00:43:24.535Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 425,
+                            "header": "Apabila billing terbit pada 31 Maret 2022 masih menggunakan PPN 10%, Apakah bisa dilakukan pembayaran pada 1 April 2022?",
+                            "ur": null,
+                            "jawaban": "<p>sebaiknya tidak dilakukan pembayaran karena billing tersebut akan timbul selisih kurang bayar. Jika pembayaran dilakukan per 1 April maka menggunakan tarif PPN yang baru (11%).</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T17:10:25.126Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        },
+                        {
+                            "id_pusatbantuan": 418,
+                            "header": "Apakah perlu dilakukan update modul PIB/PEB ?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan melakukan update modul PIB/PEB terbaru .</p><p><br></p><p><a href=\"https://www.beacukai.go.id/arsip/pop/update-patch-modul-pib-6-0-13.html\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.beacukai.go.id/arsip/pop/update-patch-modul-pib-6-0-13.html</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-28T19:24:39.645Z",
+                            "file": null,
+                            "subkategori_faq": 106
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 108,
+                    "ur": "Informasi Umum",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 602,
+                            "header": "Bagaimana cek barang yang terkena lartas impor atau ekspor",
+                            "ur": null,
+                            "jawaban": "<p>\" Silahkan cek di <a href=\"https:/insw.go.id/intr\" rel=\"noopener noreferrer\" target=\"_blank\">https:/insw.go.id/intr</a> \" </p><p><br></p><p><br></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-10-04T01:09:56.177Z",
+                            "file": null,
+                            "subkategori_faq": 108
+                        },
+                        {
+                            "id_pusatbantuan": 500,
+                            "header": "maksud dari Instrumen Pengecualian : ada / tidak ada",
+                            "ur": null,
+                            "jawaban": "<p>Arti Instrumen Pengecualian : ada / tidak ada,pada laman pengecekan hs code&nbsp;</p><p>(INTR.INSW.GO.ID)</p><p>ada --&gt; bisa mengajukan pengecualian di SSm Perizinan</p><p>tidak ada -- &gt; tidak ada mekanisme pengajuan permohonan surat pengecualian di SSm Perizinan</p><p><br></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-05-23T17:55:45.078Z",
+                            "file": null,
+                            "subkategori_faq": 108
+                        },
+                        {
+                            "id_pusatbantuan": 422,
+                            "header": "Apakah ada file pdf mengenai hs code baru BTKI 2022 yang menyertakan informasi persyaratan LS atau PI?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan akses <a href=\"https://www.beacukai.go.id/arsip/lan/BTKI-2022.html&nbsp;\" rel=\"noopener noreferrer\" target=\"_blank\">https://www.beacukai.go.id/arsip/lan/BTKI-2022.html</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T17:06:25.343Z",
+                            "file": null,
+                            "subkategori_faq": 108
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 109,
+                    "ur": "e-COO",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 479,
+                            "header": "HS Code pada COO masih menggunakan BTKI 2017 apakah harus memperbaiki COO ?",
+                            "ur": null,
+                            "jawaban": "<p>E-COO dengan HS BTKI 2017 masih berlaku sampai dengan Februari 2023</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-13T17:59:03.679Z",
+                            "file": null,
+                            "subkategori_faq": 109
+                        },
+                        {
+                            "id_pusatbantuan": 462,
+                            "header": "Penggunaan Form E masih menggunakan HS 2017 sebelum 1 april dan kapal tiba setelah 1 april . apakah FORM E masih bisa diterima jika tidak sesuai dgn HS 2022",
+                            "ur": null,
+                            "jawaban": "<p>Masih berlaku</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T21:49:09.475Z",
+                            "file": null,
+                            "subkategori_faq": 109
+                        },
+                        {
+                            "id_pusatbantuan": 423,
+                            "header": "Apakah e-COO atau SKA saya masih berlaku jika di e-COO tersebut masih menggunakan BTKI 2017? ",
+                            "ur": null,
+                            "jawaban": "<p>SKA nya masih berlaku, untuk submit modul PIB bisa ditanyakan ke BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T17:07:37.169Z",
+                            "file": null,
+                            "subkategori_faq": 109
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 110,
+                    "ur": "Fasilitas",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 466,
+                            "header": "Jika pada SKEP KITE ada komoditas terdaftar terdampak perubahan AHTN maka SKEP lama terblokir atau tidak? Apakah ada masa transisi ketika perubahan SKEP diajukan?",
+                            "ur": null,
+                            "jawaban": "<p>Untuk permasalahan tersebut dapat di konsultasikan ke BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:30:42.095Z",
+                            "file": null,
+                            "subkategori_faq": 110
+                        },
+                        {
+                            "id_pusatbantuan": 465,
+                            "header": "Pengguna jasa yg memiliki faslilitas KITE apakah harus melakukan perubahan SKEP terkait perubahan HS code dalam penggunaan BTKI 2022 ?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan menghubungi BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:27:09.301Z",
+                            "file": null,
+                            "subkategori_faq": 110
+                        },
+                        {
+                            "id_pusatbantuan": 464,
+                            "header": "Apakah atas barang impor yang sedang ditimbun di dalam PLB perlu diajukan perubahan data BC 1.6 guna menyesuaikan HS Code terbaru",
+                            "ur": null,
+                            "jawaban": "<p> Silahkan menghubungi BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T23:25:41.632Z",
+                            "file": null,
+                            "subkategori_faq": 110
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 111,
+                    "ur": "Penelusuran tabel korelasi",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 474,
+                            "header": "Jika pada dokumen PIB sebelum tgl 1 april untuk barang plastic bottle menggunakan hs 3924.10.90 sdngkn diBTKI 2022 sdh dipecah, apakah PIB kami atas HS tersebut masih berlaku ?Sedangkan barang tiba setelah 1 april .",
+                            "ur": null,
+                            "jawaban": "<p>Pemberitahuan impor atas barang tersebut apabila disubmit semenjak tanggal 1 april maka harus menggunakan BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-07T00:23:56.971Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 461,
+                            "header": "Bagaimana cara membaca tabel korelasi BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (https://insw.go.id/korelasi-btki).&nbsp;</p><p>Tata Cara Penggunaan:</p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia;</p><p>2. Klik Enter atau ikon kaca pembesar; dan</p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T21:01:21.184Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 460,
+                            "header": "Pada BTKI 2022 ditemukan adanya HS Code dengan takik dan deskripsi yang sama, yaitu HS Code 8544.49.11 dan 8544.49.31 apa yang membedakan?",
+                            "ur": null,
+                            "jawaban": "<p>Untuk klasifikasi HS silahkan menghubungi BRAVO BEACUKAI</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:51:21.521Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 459,
+                            "header": "Kami biasa menggunakan hs code 8803.30.00 tp setelah saya cek di pmk. 26/pmk.010.2022 tidak saya temukan, mohon arahannya untuk hs code yg harus kami gunakan.",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (https://insw.go.id/korelasi-btki).&nbsp;</p><p>Tata Cara Penggunaan:</p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia;</p><p>2. Klik Enter atau ikon kaca pembesar; dan</p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:49:39.436Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 458,
+                            "header": "Untuk HS code 72255090 , 48191000, 32072010 , \"DATA tidak Ditemukan pada saat pengecekan di korelasi BTKI 2022,  apakah terdapat perubahan pada HS code di BTKI 2022",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (https://insw.go.id/korelasi-btki).&nbsp;</p><p>Tata Cara Penggunaan:</p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia;</p><p>2. Klik Enter atau ikon kaca pembesar; dan</p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:39:36.833Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 457,
+                            "header": "Sebelum pemberlakuan BTKI 20222 Kami menggunakan hs code 8803.30.00 , Setelah adanya PMK 26/pmk.010.2022. HS tersebut tidak dapat  ditemukan, mohon arahannya untuk hs code yg harus digunakan.",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (https://insw.go.id/korelasi-btki).&nbsp;</p><p>Tata Cara Penggunaan:</p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia;</p><p>2. Klik Enter atau ikon kaca pembesar; dan</p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:33:08.970Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 456,
+                            "header": "Apakah link Kolerasi BTKI selesai secara sistemnya? Krn saya mencoba masukkan data HS di web Kolerasi BTKI tidak keluar detailnya. Sedangkan HS tersebut ketika dicek di INTR terkena lartas SKI BPOM",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (https://insw.go.id/korelasi-btki).&nbsp;</p><p>Tata Cara Penggunaan:</p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia;</p><p>2. Klik Enter atau ikon kaca pembesar; dan</p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-06T20:30:00.783Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 432,
+                            "header": "Bagaimana jika barang yang diimpor tiba pada 3 April 2022, HS nya setelah di cek pada BTKI 2022 ternyata sudah dipecah? ",
+                            "ur": null,
+                            "jawaban": "<p>Pemberitahuan impor atas barang tersebut apabila disubmit sejak tanggal 1 april maka harus menggunakan BTKI 2022</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T18:11:55.898Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        },
+                        {
+                            "id_pusatbantuan": 424,
+                            "header": "Bagaimana cara membaca tabel korelasi BTKI 2022 ?",
+                            "ur": null,
+                            "jawaban": "<p>Untuk mengetahui tabel korelasi BTKI 2022 dapat diakses melalui website INSW di menu penelusuran BTKI 2022 (<a href=\"https://insw.go.id/korelasi-btki)\" rel=\"noopener noreferrer\" target=\"_blank\">https://insw.go.id/korelasi-btki)</a>. Tata Cara Penggunaan: </p><p>1. Silakan diketikan HS Code BTKI 2017 pada kolom tersedia dalam 8 digit tanpa tanda titik (.) ; </p><p>2. Klik Enter atau ikon kaca pembesar; dan </p><p>3. Selanjutnya akan muncul hasil dari pencarian tersebut. Jika hasil pencarian lebih dari satu HS Code, silakan untuk memperhatikan detail komoditas yang akan di impor atau ekspor. </p><p>4. Untuk HS nya apakah lartas atau tidak dapat dicek di <a href=\"https://insw.go.id/intr\" rel=\"noopener noreferrer\" target=\"_blank\">https://insw.go.id/intr</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-31T17:09:31.735Z",
+                            "file": null,
+                            "subkategori_faq": 111
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

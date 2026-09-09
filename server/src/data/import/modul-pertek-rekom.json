@@ -1,0 +1,227 @@
+{
+    "code": "01",
+    "message": "Sukses",
+    "data": [
+        {
+            "kd_kategori_faq": 28,
+            "ur": "Modul Pertek/Rekom",
+            "subkategori": [
+                {
+                    "kd_subkategori_faq": 118,
+                    "ur": "Pengisian data pada sistem INSW",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 993,
+                            "header": "Apakah LNSW memberikan layanan pengaduan tatap muka untuk pengguna jasa?",
+                            "ur": null,
+                            "jawaban": "<p>Contact center LNSW tidak melayani layanan tatap muka.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:06:58.827Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 992,
+                            "header": "Jika pelaku usaha mengalami kendala terkait teknis baik mengenai pengaturan pengajuan pertek maupun dokumen persyaratan pertek, dapat menghubungi kemana?",
+                            "ur": null,
+                            "jawaban": "<p>Jika pelaku usaha mengalami kendala terkait teknis baik mengenai pengaturan pengajuan pertek maupun dokumen persyaratan pertek, pelaku usaha dapat menghubungi layanan informasi Kementerian Perindustrian sebagai berikut:&nbsp;</p><p>- Hotline SIINas (021) 5265029</p><p>- Helpdesk SIINas Siinas.kemenperin.go.id/helpdesk</p><p>- WA Official 0813 1997 6986</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:05:38.464Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 991,
+                            "header": "Kontak layanan yang dapat dihubungi oleh pelaku usaha saat mengalami kendala dalam penggunaan sistem INSW?",
+                            "ur": null,
+                            "jawaban": "<p>Apabila pelaku usaha mengalami kendala mengenai SINSW, pelaku usaha dapat mengubungi layanan informasi sebagai berikut:</p><p>- Call center 150-679</p><p>- Whatsapp 08156150679</p><p>- Live chat ww.insw.go.id&nbsp;</p><p>- live chat &amp; tracking ticket https://info-sinsw.kemenkeu.go.id</p><p>- surat elektronik info@insw.go.id</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:04:54.009Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 990,
+                            "header": "Bagaimana jika akun INSW belum terintegrasi dengan SIINas?",
+                            "ur": null,
+                            "jawaban": "<p>Apabila akun INSW pelaku usaha belum terintegrasi dengan SIINas, pelaku usaha dapat mengakses laman home.insw.go.id. Selanjutnya pilih menu pusat pengaturan akun lalu pilih profil akun. Setelah muncul form pengaturan profil akun, pilih menu integrasi akun K/L kemudian pilih akun SIINas yang akan diintegrasikan.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:03:46.411Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 989,
+                            "header": "Apakah pelaku usaha bisa login ke sistem INSW menggunakan user selain user INSW?",
+                            "ur": null,
+                            "jawaban": "<p>Selain login menggunakan user SINSW, pelaku usaha dapat login menggunakan akun lainnya. Untuk login menggunakan akun lainnya, pelaku usaha dapat memilih pilihan \"other option.\" Selanjutnya akan muncul beberapa pilihan login diantaranya dengan akun InaportNet, SSO Kemendag, Kemenkeu ID, Online Single Submission (OSS), dan National Logistic Ecosystem (NLE)</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:02:55.217Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 988,
+                            "header": "Bagaimana registrasi user untuk mengakses modul pertek di SINSW?",
+                            "ur": null,
+                            "jawaban": "<p>Untuk dapat mengakses modul pertek di SINSW, pelaku usaha perlu memiliki user SINSW Gen II. Jika pelaku usaha belum memiliki user SINSW Gen II namun sudah memiliki user SINSW Gen I, pelaku usaha dapat melakukan aktivasi user Gen II secara mandiri dengan cara login pada SINSW Gen 2&nbsp;menggunakan user admin SINSW Gen I lalu melengkapi proses aktivasi. Jika pelaku usaha belum memiliki user SINSW Gen I dan user SINSW Gen II, pelaku usaha dapat melakukan registrasi pada laman https://sso.insw.go.id/&nbsp;selanjutnya mengisi data yang diminta. Detil mengenai cara untuk registrasi user SINSW Gen II dapat diakses pada laman https://taplink.cc/modul_pertek_rekom.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T01:01:21.983Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 987,
+                            "header": "Bagaimana pengisian laporan realisasi impor dan realisasi distribusi untuk pelaku usaha yang baru pertama kali mengajukan perijinan impor?",
+                            "ur": null,
+                            "jawaban": "<p>Pelaku usaha yang baru pertama kali mengajukan impor dapat melakukan penyampaian laporan realisasi impor dan/atau realisasi distribusi \"nihil\".</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:33:18.790Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 986,
+                            "header": "API-U dan API-P apakah boleh buat pertek? Apakah termasuk PI komplementer atau bagaimana?",
+                            "ur": null,
+                            "jawaban": "<p>Ketentuan mengenai pengajuan pertek diatur lebih lanjut dalam Peraturan Menteri Perindustrian.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:24:18.441Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 985,
+                            "header": "Berapa kapasitas maksimal dokumen yang dapat diupload pada tab dokumen syarat?",
+                            "ur": null,
+                            "jawaban": "<p>Kapasitas maksimal dokumen yang dapat diupload pengguna jasa pada tab dokumen syarat adalah sebesar 50 mb per dokumen.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:17:05.135Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 984,
+                            "header": "Berapa lama waktu layanan pengajuan pertek dihitung sejak data yang sudah disampaikan lengkap?",
+                            "ur": null,
+                            "jawaban": "<p>SLA&nbsp;layanan penerbitan pertek dapat dilihat pengaturannya pada Permenperin tentang Tata Cara Penerbitan Teknis Komoditas Terkait.&nbsp;Sebagai contoh dalam pasal 14 ayat 1 Permenperin No 1 Tahun 2024 diatur bahwa Direktur Jenderal menerbitkan pertek dalam jangka waktu paling lama 5 (lima) hari kerja setelah dokumen lengkap dan sesuai&nbsp;</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:07:24.992Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 983,
+                            "header": "Apakah layanan tarik data sudah dapat digunakan?",
+                            "ur": null,
+                            "jawaban": "<p>Layanan tarik data merupakan fitur yang telah tersedia pada modul pertek di SINSW yang dapat dimanfaatkan bila pelaku usaha telah memiliki pertimbangan teknis/rekomendasi yang telah terbit sebelumnya.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:05:24.933Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 982,
+                            "header": "Pada form data pelabuhan asal, dropdown nama pelabuhan tidak secara otomatis muncul. Bagaimanakah cara pengisiannya?",
+                            "ur": null,
+                            "jawaban": "<p>Dropdown pada form pengisian data pelabuhan tidak langsung muncul secara otomatis, pelaku usaha perlu mengetikkan minimal 2 huruf agar dropdown pelabuhan asal dapat muncul.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-18T00:03:28.181Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 981,
+                            "header": "Karena adanya kemungkinan untuk melakukan impor barang dari pelabuhan asal yang berbeda-beda menuju pelabuhan tujuan yang berbeda-beda pula, apakah data pelabuhan asal dan pelabuhan tujuan dapat dipilih lebih dari satu?",
+                            "ur": null,
+                            "jawaban": "<p>Pada form pengisian data pelabuhan, pelaku usaha dapat memilih lebih dari 1 pelabuhan asal dan pelabuhan tujuan sesuai kebutuhan dengan tetap memperhatikan ketentuan yang berlaku.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-17T23:27:41.491Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 980,
+                            "header": "Bagaimana jika barang hasil produksi oleh perusahaan API-P tidak termasuk dalam list HS yang tersedia?",
+                            "ur": null,
+                            "jawaban": "<p>Dalam hal barang hasil produksi oleh perusahaan API-P tidak termasuk dalam list HS yang tersedia , pelaku usaha dapat memilih pilihan \"lainnya\"</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-17T23:18:13.311Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 979,
+                            "header": "Apakah bisa jika pelaku usaha melakukan input data bahan baku/barang dengan HS yang sama namun spesifikasi berbeda dalam 1 kali input?",
+                            "ur": null,
+                            "jawaban": "<p>Bisa, pelaku usaha dapat melakukan input data barang bahan baku/barang HS yang sama dan spesifikasi berbeda dalam 1 kali input</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-17T22:31:20.063Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 978,
+                            "header": "Apakah terdapat perbedaan dalam proses pengajuan pertek untuk API-U dan perusahaan API-P?",
+                            "ur": null,
+                            "jawaban": "<p>Perbedaan pengajuan pertek antara API-U dan API-P terletak pada perbedaan form yang diisi dan dokumen yang dipersyaratkan. Perusahaan API-U tidak diwajibkan untuk mengisi tab produksi.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-17T22:28:31.437Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 977,
+                            "header": "Bagaimana solusinya jika pelaku usaha sudah membuat draft permohonan pertek baru namun ternyata permohonan tersebut batal diajukan dan selanjutnya perlu untuk membuat permohonan lain?",
+                            "ur": null,
+                            "jawaban": "<p>Pelaku usaha tidak dapat membuat permohonan pertek baru jika masih terdapat draft permohonan di tahun yang sama. Draft permohonan pertek yang sudah diajukan tidak dapat dihapus sehingga jika pelaku usaha perlu untuk membuat permohonan baru, pelaku usaha disarankan untuk melakukan edit pada draft permohonan yang sudah ada</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-07-17T22:24:53.297Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 973,
+                            "header": "Apakah terdapat perbedaan dalam proses pengajuan pertek untuk API-U dan perusahaan API-P?",
+                            "ur": null,
+                            "jawaban": "<p> Perbedaan pengajuan pertek antara API-U dan API-P terletak pada perbedaan form yang diisi dan dokumen yang dipersyaratkan. Perusahaan API-U tidak diwajibkan untuk mengisi tab produksi.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-06-10T19:03:39.588Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        },
+                        {
+                            "id_pusatbantuan": 972,
+                            "header": "Bagaimana solusinya jika pelaku usaha sudah membuat draft permohonan pertek baru namun ternyata permohonan tersebut batal diajukan dan selanjutnya perlu untuk membuat permohonan lain?",
+                            "ur": null,
+                            "jawaban": "<p> Pelaku usaha tidak dapat membuat permohonan pertek baru jika masih terdapat draft permohonan di tahun yang sama. Draft permohonan pertek yang sudah diajukan tidak dapat dihapus sehingga jika pelaku usaha perlu untuk membuat permohonan baru, pelaku usaha disarankan untuk melakukan edit pada draft permohonan yang sudah ada.&nbsp;</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2024-06-10T19:02:30.964Z",
+                            "file": null,
+                            "subkategori_faq": 118
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

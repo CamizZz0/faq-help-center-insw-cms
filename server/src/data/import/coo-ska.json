@@ -1,0 +1,112 @@
+{
+    "code": "01",
+    "message": "Sukses",
+    "data": [
+        {
+            "kd_kategori_faq": 13,
+            "ur": "COO/SKA",
+            "subkategori": [
+                {
+                    "kd_subkategori_faq": 67,
+                    "ur": "Penjelasan COO",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 1038,
+                            "header": "Apakah semua Certificate of Origin (COO) dapat diterima dan ditracking di sistem INSW?",
+                            "ur": null,
+                            "jawaban": "<p>INSW hanya menerima dokumen elektronik COO dari negara ASEAN (Form D) , Korea Selatan (Form AK) , dan China (Form E).</p><p>Untuk dokumen COO diatas dapat dilakukan tracking eCOO di sistem INSW melalui </p><p>https://insw.go.id/e-coo </p><p><br></p><p>Untuk dokumen COO Original/ hardcopy seperti COO yang berasal dari Eropa, Hongkong, India , Pakistan, Australia  dll, penyampaian tidak melalui sistem INSW sehingga tidak bisa dicek di tracking COO di INSW .</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2026-02-01T18:35:59.268Z",
+                            "file": null,
+                            "subkategori_faq": 67
+                        },
+                        {
+                            "id_pusatbantuan": 481,
+                            "header": "ECOO sudah kami ajukan dengan PIB AJU XXX namun karena ada kesalahan, kami mengganti dengan nomor aju Baru  namun SKA/ECOO dimaksud tidak dapat kami gunakan lagi. Bisakah diaktifkan lagi SKA/ECOOnya ?",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan menghubungi BC melalui live chat : http://bit.ly/bravobc untuk konfirmasi lebih lanjut atau mengaktifkan SKA/COO nya kembali. </p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-14T15:48:11.535Z",
+                            "file": null,
+                            "subkategori_faq": 67
+                        },
+                        {
+                            "id_pusatbantuan": 65,
+                            "header": "Jenis Surat Keterangan Asal (SKA)/Certificate of Origin (CoO).",
+                            "ur": "",
+                            "jawaban": "<p> Terdapat 2 jenis Surat Keterangan Asal (SKA)/Certificate of Origin&nbsp;(CoO), yaitu sebagai berikut: </p><p> &nbsp;1. SKA/CoO Preferensi yaitu jenis dokumen SKA/CoO yang menjadi persyaratan dalam memperoleh preferensi yang disertakan pada barang ekspor tertentu untuk memperoleh fasilitas berupa pembebasan seluruh atau sebagian bea masuk yang diberikan oleh suatu negara/kelompok negara tujuan; dan </p><p> &nbsp;2. SKA/CoO Non-Preferensi yaitu jenis dokumen SKA/CoO yang berfungsi sebagai dokumen pengawasan dan atau dokumen penyerta asal barang ekspor/untuk dapat memasuki suatu wilayah negara tertentu.</p>",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-25T02:03:54.199Z",
+                            "file": null,
+                            "subkategori_faq": 67
+                        },
+                        {
+                            "id_pusatbantuan": 64,
+                            "header": "Electronic Certificate of Origin (e-CoO)",
+                            "ur": "",
+                            "jawaban": "Electronic Certificate of Origin (e-CoO) atau yang dalam bahasa Indonesia disebut dengan Surat Keterangan Asal elektronik (e-SKA) adalah sertifit asal barang, yang menyatakan bahwa barang/komoditas yang diekspor berasal dari daerah/negara pengekspor.",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-25T02:03:12.205Z",
+                            "file": null,
+                            "subkategori_faq": 67
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 68,
+                    "ur": "Tracking e-COO",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 483,
+                            "header": "coo saya tidak terbaca di negara tujuan",
+                            "ur": null,
+                            "jawaban": "<p>Silahkan cek status dok COO , jika sudah REC seharusnya data COO sudah diterima di negara tujuan</p><p>Untuk Status AS1, AS2 silahkan tunggu dan cek secara berkala , kemungkinan sedang ada gangguan di sistem penerimaan COO di gateway negara tujuan.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-14T16:39:09.605Z",
+                            "file": null,
+                            "subkategori_faq": 68
+                        },
+                        {
+                            "id_pusatbantuan": 482,
+                            "header": "Dokumen e-COO belum ada di INSW",
+                            "ur": null,
+                            "jawaban": "<p>Dokumen e-COO&nbsp;belum ada di INSW , silahkan hubungi pihak shipper untuk dapat mengirimkan kembali e-COO Elektroniknya ke sistem INSW.</p><p><br></p><p>Untuk trader di China bisa telepon ke helpdesk di nomer ini 12360</p><p>pastikan no e-coo sudah ada di portal bea dan cukai China&nbsp;( http://origin.customs.gov.cn/ ) agar bisa dikonfirmasi / dicek oleh BC China kendala pengiriman-nya&nbsp;</p><p><br></p><p>Jika akan menggunakan Original COO /Hardcopy COO silahkan menggunakan kode 861 di modul PIB</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-14T16:06:13.240Z",
+                            "file": null,
+                            "subkategori_faq": 68
+                        },
+                        {
+                            "id_pusatbantuan": 134,
+                            "header": "Kendala Tracking e-COO dan cetak e-COO",
+                            "ur": null,
+                            "jawaban": "<p>Jika mengalami kendala pada menu tracking e-COO </p><p>Official Website INSW <a href=\"https://insw.go.id/e-coo\" rel=\"noopener noreferrer\" target=\"_blank\">https://insw.go.id/e-coo</a></p><p><br></p><p>silakan untuk klik pada tautan berikut ini:</p><p><a href=\"https://apps1.insw.go.id/tracking-atiga/index.php\" rel=\"noopener noreferrer\" target=\"_blank\" style=\"color: rgb(0, 102, 204);\">https://apps1.insw.go.id/tracking-atiga/index.php</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-04-05T21:35:03.124Z",
+                            "file": null,
+                            "subkategori_faq": 68
+                        },
+                        {
+                            "id_pusatbantuan": 66,
+                            "header": "Tracking Electronic Certificate of Origin (e-CoO)",
+                            "ur": "",
+                            "jawaban": "<p>Cara melakukan Tracking (Penelusuran) untuk e-COO di LNSW:&nbsp;</p><p>1. Masuk ke situs LNSW di <a href=\"www.insw.go.id\" rel=\"noopener noreferrer\" target=\"_blank\">www.insw.go.id</a></p><p>2. Pilih menu penelusuran</p><p>3. Pilih menu e-COO</p><p>4. Masukan nomor NPWP dan nomor e-COO</p><p>5. Tekan tombol enter </p><p>6. Pengguna akan diarahkan ke halaman yang menampilkan hasil pencarian</p>",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-25T02:05:38.892Z",
+                            "file": null,
+                            "subkategori_faq": 68
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

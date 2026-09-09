@@ -1,0 +1,95 @@
+{
+    "code": "01",
+    "message": "Sukses",
+    "data": [
+        {
+            "kd_kategori_faq": 9,
+            "ur": "SSM QC (Impor - Ekspor)",
+            "subkategori": [
+                {
+                    "kd_subkategori_faq": 46,
+                    "ur": "Ubah Data",
+                    "listFaq": []
+                },
+                {
+                    "kd_subkategori_faq": 49,
+                    "ur": "Cara registrasi SSm QC",
+                    "listFaq": []
+                },
+                {
+                    "kd_subkategori_faq": 125,
+                    "ur": "Ketentuan Umum",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 1075,
+                            "header": "Importir/PPJK lupa password user INSW",
+                            "ur": null,
+                            "jawaban": "<p>Importir/PPJK dapat email ke info@insw.go.id dengan menyampaikan informasi username, email, NPWP dan Nama Perusahaan.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2026-07-22T01:11:27.504Z",
+                            "file": null,
+                            "subkategori_faq": 125
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 126,
+                    "ur": "Registrasi Akun",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 105,
+                            "header": "Importir/PPJK belum terdaftar atau belum memiliki user pada sistem Karantina",
+                            "ur": "",
+                            "jawaban": "<p>Importir/PPJK harus melakukan registrasi user di sistem Karantina terlebih dahulu yang dapat diakses di http://ppk.bkipm.kkp.go.id/ atau http://iqfast.karantia.pertanian.go.id/</p>",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-31T23:27:36.571Z",
+                            "file": null,
+                            "subkategori_faq": 126
+                        },
+                        {
+                            "id_pusatbantuan": 104,
+                            "header": "Persiapan sebelum menggunakan SSm QC",
+                            "ur": "",
+                            "jawaban": "<p>Importir/PPJK harus memiliki user SSm QC dan user sistem Karantina Best Trust</p>",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-31T23:26:06.916Z",
+                            "file": null,
+                            "subkategori_faq": 126
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 127,
+                    "ur": "Aplikasi",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 1074,
+                            "header": "Bagaimana cara melakukan penyesuaian kurs pada SSm QC?",
+                            "ur": null,
+                            "jawaban": "<p class=\"ql-align-justify\">Sejak diberlakukannya fitur Informasi Komponen Biaya (IKB) pada jenis pengajuan dokumen BC 2.0 dan FTZ-01, pemutakhiran nilai kurs dilakukan dengan langkah berikut: 1. Klik tombol Refresh yang berada di samping kolom Kurs.</p><p>2. Klik tombol IKB.</p><p>3. Klik tombol Simpan.</p><p class=\"ql-align-justify\">Setelah langkah tersebut dilakukan, sistem akan memperbarui nilai kurs yang digunakan dalam pengajuan. </p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2026-07-22T01:00:27.072Z",
+                            "file": null,
+                            "subkategori_faq": 127
+                        },
+                        {
+                            "id_pusatbantuan": 1073,
+                            "header": "Mengapa data NPWP dan NIB saya berbeda pada SSm QC",
+                            "ur": null,
+                            "jawaban": "<p>Apabila Anda bertindak sebagai PPJK (Pengusaha Pengurusan Jasa Kepabeanan), pastikan data yang diisikan pada kolom Pengusaha merupakan data importir/pengguna jasa yang bersangkutan, bukan data PPJK. Pengisian data PPJK pada kolom tersebut dapat menyebabkan ketidaksesuaian informasi NPWP dan NIB yang ditampilkan dalam sistem SSm. </p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2026-07-22T00:58:51.832Z",
+                            "file": null,
+                            "subkategori_faq": 127
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

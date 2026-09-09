@@ -1,0 +1,90 @@
+{
+    "code": "01",
+    "message": "Sukses",
+    "data": [
+        {
+            "kd_kategori_faq": 4,
+            "ur": "PEB",
+            "subkategori": [
+                {
+                    "kd_subkategori_faq": 22,
+                    "ur": "Penjelasan PEB",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 49,
+                            "header": "Pemberitahuan Ekspor Barang (PEB)",
+                            "ur": "Pemberitahuan Ekspor Barang (PEB) adalag pemberitahuan pabean yang digunakan untuk memberitahukan ekspor barang dalam bentuk tulisan di atas formulir atau data elektronik. Bentuk dan isi pemberitahuan pabean ekspor ditetapkan dalam Peraturan Direktur Jenderal Bea dan Cukai.",
+                            "jawaban": "Pemberitahuan Ekspor Barang (PEB) adalag pemberitahuan pabean yang digunakan untuk memberitahukan ekspor barang dalam bentuk tulisan di atas formulir atau data elektronik. Bentuk dan isi pemberitahuan pabean ekspor ditetapkan dalam Peraturan Direktur Jenderal Bea dan Cukai.",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-24T23:17:10.000Z",
+                            "file": null,
+                            "subkategori_faq": 22
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 75,
+                    "ur": "Tracking PEB",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 78,
+                            "header": "Tracking Pemberitahuan Impor Barang (PEB)",
+                            "ur": "",
+                            "jawaban": "<p>Tracking Pemberitahuan Impor Barang (PEB) dapat dilakukan melalui langkah-langkah sebagai berikut:</p><p>1. Kunjungi laman LNSW (www.insw.go.id)</p><p>2. Pilih menu Penelusuran</p><p>3. Klik PIB/PEB</p><p>4. Ketik 26 digit Nomor Aju dokumen kepabeanan (tanpa tanda (-) strip)</p><p>5. Tekan tombol enter</p><p>6. Pengguna akan diarahkan ke halaman yang menampilkan hasil pencarian</p>",
+                            "url": "www.insw.go.id",
+                            "kategori": "faq",
+                            "waktu_rekam": "2021-03-26T02:48:31.550Z",
+                            "file": null,
+                            "subkategori_faq": 75
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 89,
+                    "ur": "Reject Dokumen",
+                    "listFaq": [
+                        {
+                            "id_pusatbantuan": 442,
+                            "header": "Apa penyebab reject dari dokumen PEB saya ?",
+                            "ur": null,
+                            "jawaban": "<p>Kemungkinan penyebab tidak bisa dilakukan validasi/ rekonsiliasi : </p><p>1. Salah pengisian no dan/atau tanggal ijin dalam dokumen pabean</p><p>2. Dokumen ijin belum dikirimkan oleh Kementerian/Lembaga penerbit ijin</p><p>3. Salah mengisi kode dokumen ijin</p><p>4. Status data perijinan sudah expired atau sudah dipakai</p><p>5. Ketidaksesuaian data perijinan dengan data pada dokumen pabean (Misal : pelabuhan asal, pelabuhan bongkar, npwp, dll)</p><p>Kuota perijinan tidak mencukupi (Over kuota) </p><p><br></p><p><br></p><p>Lakukan&nbsp;pencocokan terhadap dokumen perijinan dengan data ijin yang diberitahukan dalam PIB/PEB: </p><p><br></p><p>ADA atau BENAR jika terjadi kesamaan pencocokan pada field (elemen data):</p><p>NPWP</p><p>No Perijinan</p><p>Tanggal diterbitkan perijinan</p><p>Kode Ijin</p><p><br></p><p>SESUAI&nbsp;atau VALID jika didalam data perijinan tersebut terdapat informasi tambahan dan informasi tambahan tersebut terjadi kesamaan pencocokan pada field (elemen data) :</p><p>HS code</p><p>Pelabuhan Muat/Bongkar</p><p>Negara Asal</p><p>Jangka Waktu Berlakunya ijin</p><p>Saldo kuota perijinan </p><p><br></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-03T17:56:38.610Z",
+                            "file": null,
+                            "subkategori_faq": 89
+                        },
+                        {
+                            "id_pusatbantuan": 440,
+                            "header": "Apa maksud dari NSW Reject dan BC Reject di status tracking dokumen saya",
+                            "ur": null,
+                            "jawaban": "<p>Pastikan asal dan status penyebab reject/penolakan dimaksud agar mempermudah pengecekan. </p><p><br></p><p>Jika reject disebabkan oleh validasi di INSW maka status reject diawali dengan </p><p>NSW - REJECT&nbsp;maka silahkan hubungi INSW untuk konfirmasi lebih lanjut.</p><p><br></p><p>Jika reject disebabkan oleh validasi di BEACUKAI maka status reject diawali dengan </p><p>BC&nbsp;- REJECT&nbsp;maka silahkan hubungi Bea dan Cukai&nbsp;untuk konfirmasi&nbsp;lebih lanjut.</p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-04-03T17:53:56.646Z",
+                            "file": null,
+                            "subkategori_faq": 89
+                        },
+                        {
+                            "id_pusatbantuan": 399,
+                            "header": "PEB diblokir ,  Mohon info penyebab blokir dan bagaimana cara pembukaan blokirnya",
+                            "ur": null,
+                            "jawaban": "<p>Pembukaan blokir dapat diajukan pada Official layanan konsultasi online Subdit Registrasi Kepabeanan (jam layanan office hour, sabtu &amp; Minggu tutup)</p><p><br></p><p>Untuk buka blokir cukup dari user portal (<a href=\"https://customer.beacukai.go.id\" rel=\"noopener noreferrer\" target=\"_blank\">https://customer.beacukai.go.id</a>)</p><p>Apabila user portal nggak bisa diakses , Lengkapi&nbsp;NIB , NPWP, bukti keaktifan import perusahan Invoice, Packing list, PIB. Surat permohonan buka Blokir dan kirim lewat email dibawah.</p><p><br></p><p>Konfirmasi hanya melalui Telegram : 087785472363</p><p><br></p><p>Email : <a href=\"mailto:registrasikepabeanan@customs.go.id\" rel=\"noopener noreferrer\" target=\"_blank\">registrasikepabeanan@customs.go.id</a> atau <a href=\"mailto:aktivasi.registrasikepabeanan@gmail.com\" rel=\"noopener noreferrer\" target=\"_blank\">aktivasi.registrasikepabeanan@gmail.com</a></p><p>BRAVO BEA CLIKAI: <a href=\"http://Linktr.ee/bravobeacukai\" rel=\"noopener noreferrer\" target=\"_blank\">http://Linktr.ee/bravobeacukai</a></p>",
+                            "url": null,
+                            "kategori": "faq",
+                            "waktu_rekam": "2022-03-06T18:48:28.685Z",
+                            "file": null,
+                            "subkategori_faq": 89
+                        }
+                    ]
+                },
+                {
+                    "kd_subkategori_faq": 90,
+                    "ur": "Analis Point",
+                    "listFaq": []
+                }
+            ]
+        }
+    ]
+}
