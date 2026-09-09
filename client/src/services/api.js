@@ -58,3 +58,22 @@ export function getCmsFaqs(params = {}) {
 export function getCategories() {
     return request("/categories");
 }
+
+export function getSubcategories(categorySlug) {
+    return request(
+        `/categories/${categorySlug}/subcategories`
+    );
+}
+
+export function getTopics(subcategorySlug) {
+    return request(
+        `/subcategories/${subcategorySlug}/topics`
+    );
+}
+
+export function createCmsFaq(payload) {
+    return request("/cms/faqs", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+}
