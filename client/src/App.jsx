@@ -44,6 +44,20 @@ export default function App() {
         />
 
         <Route
+          path="faqs/new"
+          element={
+            <PlaceholderPage title="Tambah FAQ" />
+          }
+        />
+
+        <Route
+          path="faqs/:faqId/edit"
+          element={
+            <PlaceholderPage title="Edit FAQ" />
+          }
+        />
+
+        <Route
           path="guides"
           element={
             <PlaceholderPage title="Kelola Panduan" />
