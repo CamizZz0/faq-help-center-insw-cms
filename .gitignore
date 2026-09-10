@@ -11,6 +11,9 @@ server/.env
 client/dist/
 server/dist/
 
+# Local uploaded documents
+server/uploads/
+
 # Logs
 *.log
 

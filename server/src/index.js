@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import { pool } from "./config/db.js";
+import { GUIDE_UPLOAD_DIR } from "./services/guideFiles.js";
 
 import categoryRoutes from "./routes/categoryRoutes.js";
 import subcategoryRoutes from "./routes/subcategoryRoutes.js";
@@ -12,6 +13,7 @@ import guideRoutes from "./routes/guideRoutes.js";
 import tutorialRoutes from "./routes/tutorialRoutes.js";
 import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
 import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
+import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
 
 const app = express();
 
@@ -40,12 +42,18 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/uploads/guides", express.static(GUIDE_UPLOAD_DIR, {
+    dotfiles: "deny",
+    index: false,
+    setHeaders(res) { res.setHeader("X-Content-Type-Options", "nosniff"); },
+}));
 
 app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/cms/categories", cmsCategoryRoutes);
+app.use("/api/cms/guides", cmsGuideRoutes);
 app.use("/api/guides", guideRoutes);
 app.use("/api/tutorials", tutorialRoutes);
 

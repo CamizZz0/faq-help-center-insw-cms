@@ -9,6 +9,8 @@ import FaqListPage from "./pages/cms/FaqListPage";
 import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
 import CategoryPage from "./pages/cms/CategoryPage";
+import GuideListPage from "./pages/cms/GuideListPage";
+import GuideFormPage from "./pages/cms/GuideFormPage";
 
 export default function App() {
   return (
@@ -51,8 +53,11 @@ export default function App() {
 
         <Route
           path="guides"
-          element={<PlaceholderPage title="Kelola Panduan" />}
+          element={<GuideListPage />}
         />
+
+        <Route path="guides/new" element={<GuideFormPage />} />
+        <Route path="guides/:guideId/edit" element={<GuideFormPage />} />
 
         <Route
           path="tutorials"

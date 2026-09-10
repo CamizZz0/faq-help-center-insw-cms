@@ -13,9 +13,7 @@ export default function CmsLayout() {
                             CMS Pusat Bantuan
                         </p>
 
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 font-semibold text-[#062E6F]">
-                            A
-                        </div>
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 font-semibold text-[#062E6F]">A</div>
                     </div>
                 </header>
 

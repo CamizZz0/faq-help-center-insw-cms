@@ -6,26 +6,23 @@ import {
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
+import { guideForResponse } from "../services/guideFiles.js";
 import {
     categories,
     guides,
 } from "../models/schema.js";
 
-export async function getGuides(req, res, next) {
+export async function getGuides(req, res) {
     try {
-        const page = Math.max(
-            Number(req.query.page) || 1,
-            1
-        );
-
-        const limit = Math.min(
-            Math.max(Number(req.query.limit) || 6, 1),
-            50
-        );
+        const page = Number(req.query.page ?? 1);
+        const limit = Number(req.query.limit ?? 6);
+        if (!Number.isSafeInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50 || !Number.isSafeInteger((page - 1) * limit)) {
+            return res.status(400).json({ success: false, message: "Parameter pagination tidak valid" });
+        }
 
         const offset = (page - 1) * limit;
         const categorySlug =
-            req.query.category?.trim();
+            String(req.query.category ?? "").trim();
 
         const conditions = [
             eq(guides.isPublished, true),
@@ -47,7 +44,6 @@ export async function getGuides(req, res, next) {
                     slug: guides.slug,
                     description: guides.description,
                     fileUrl: guides.fileUrl,
-                    thumbnailUrl: guides.thumbnailUrl,
                     category: {
                         id: categories.id,
                         name: categories.name,
@@ -89,7 +85,7 @@ export async function getGuides(req, res, next) {
         res.status(200).json({
             success: true,
             message: "Panduan berhasil diambil",
-            data,
+            data: data.map(guide => guideForResponse(guide, req)),
             meta: {
                 page,
                 limit,
@@ -100,14 +96,14 @@ export async function getGuides(req, res, next) {
             },
         });
     } catch (error) {
-        next(error);
+        console.error("Gagal mengambil panduan:", error);
+        return res.status(500).json({ success: false, message: "Terjadi kesalahan saat mengambil panduan" });
     }
 }
 
 export async function getGuideBySlug(
     req,
-    res,
-    next
+    res
 ) {
     try {
         const { slug } = req.params;
@@ -119,7 +115,6 @@ export async function getGuideBySlug(
                 slug: guides.slug,
                 description: guides.description,
                 fileUrl: guides.fileUrl,
-                thumbnailUrl: guides.thumbnailUrl,
                 category: {
                     id: categories.id,
                     name: categories.name,
@@ -149,9 +144,10 @@ export async function getGuideBySlug(
         res.status(200).json({
             success: true,
             message: "Detail panduan berhasil diambil",
-            data: data[0],
+            data: guideForResponse(data[0], req),
         });
     } catch (error) {
-        next(error);
+        console.error("Gagal mengambil detail panduan:", error);
+        return res.status(500).json({ success: false, message: "Terjadi kesalahan saat mengambil detail panduan" });
     }
 }

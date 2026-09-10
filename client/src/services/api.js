@@ -3,15 +3,18 @@ const API_BASE_URL =
     "http://localhost:5001/api";
 
 async function request(endpoint, options = {}) {
+    const headers = new Headers(options.headers);
+    if (options.body instanceof FormData) {
+        headers.delete("Content-Type");
+    } else if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
     const response = await fetch(
         `${API_BASE_URL}${endpoint}`,
         {
             ...options,
 
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
+            headers,
         }
     );
 
@@ -137,4 +140,24 @@ export function deleteCmsCategory(id) {
             method: "DELETE",
         }
     );
+}
+
+export function getCmsGuides(params = {}) {
+    return request(`/cms/guides${createQuery(params)}`);
+}
+
+export function getCmsGuideById(id) {
+    return request(`/cms/guides/${encodeURIComponent(id)}`);
+}
+
+export function createCmsGuide(payload) {
+    return request("/cms/guides", { method: "POST", body: payload });
+}
+
+export function updateCmsGuide(id, payload) {
+    return request(`/cms/guides/${encodeURIComponent(id)}`, { method: "PATCH", body: payload });
+}
+
+export function deleteCmsGuide(id) {
+    return request(`/cms/guides/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
