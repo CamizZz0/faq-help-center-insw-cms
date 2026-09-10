@@ -102,3 +102,39 @@ export function deleteCmsFaq(id) {
         }
     );
 }
+
+export function getCmsCategories() {
+    return request("/cms/categories");
+}
+
+export function getCmsCategoryById(id) {
+    return request(
+        `/cms/categories/${encodeURIComponent(id)}`
+    );
+}
+
+export function createCmsCategory(payload) {
+    return request("/cms/categories", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+}
+
+export function updateCmsCategory(id, payload) {
+    return request(
+        `/cms/categories/${encodeURIComponent(id)}`,
+        {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        }
+    );
+}
+
+export function deleteCmsCategory(id) {
+    return request(
+        `/cms/categories/${encodeURIComponent(id)}`,
+        {
+            method: "DELETE",
+        }
+    );
+}

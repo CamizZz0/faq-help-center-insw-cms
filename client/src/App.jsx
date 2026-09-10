@@ -9,6 +9,7 @@ import FaqListPage from "./pages/cms/FaqListPage";
 import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
 import FaqEditPage from "./pages/cms/FaqEditPage";
+import CategoryPage from "./pages/cms/CategoryPage";
 
 export default function App() {
   return (
@@ -17,13 +18,6 @@ export default function App() {
         <Route
           index
           element={<DashboardPage />}
-        />
-
-        <Route
-          path="categories"
-          element={
-            <PlaceholderPage title="Kelola Kategori" />
-          }
         />
 
         <Route
@@ -39,6 +33,11 @@ export default function App() {
         <Route
           path="faqs/:faqId/edit"
           element={<FaqFormPage />}
+        />
+
+        <Route
+          path="categories"
+          element={<CategoryPage />}
         />
       </Route>
     </Routes>
