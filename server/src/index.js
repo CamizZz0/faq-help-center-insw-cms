@@ -11,6 +11,7 @@ import faqRoutes from "./routes/faqRoutes.js";
 import guideRoutes from "./routes/guideRoutes.js";
 import tutorialRoutes from "./routes/tutorialRoutes.js";
 import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
+import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/subcategories", subcategoryRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/cms/categories", cmsCategoryRoutes);
 app.use("/api/guides", guideRoutes);
 app.use("/api/tutorials", tutorialRoutes);
 

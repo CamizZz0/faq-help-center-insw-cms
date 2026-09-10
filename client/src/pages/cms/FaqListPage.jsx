@@ -1,7 +1,4 @@
-import {
-    useEffect,
-    useState,
-} from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
     ChevronLeft,
@@ -9,6 +6,7 @@ import {
     Pencil,
     Plus,
     Search,
+    Trash2,
 } from "lucide-react";
 
 import { Link } from "react-router-dom";
@@ -16,18 +14,17 @@ import { Link } from "react-router-dom";
 import {
     getCategories,
     getCmsFaqs,
+    deleteCmsFaq,
 } from "../../services/api";
+
+import DeleteFaqModal from "../../components/cms/DeleteFaqModal";
 
 function extractCategories(result) {
     if (Array.isArray(result?.data)) {
         return result.data;
     }
 
-    if (
-        Array.isArray(
-            result?.data?.categories
-        )
-    ) {
+    if (Array.isArray(result?.data?.categories)) {
         return result.data.categories;
     }
 
@@ -36,50 +33,71 @@ function extractCategories(result) {
 
 export default function FaqListPage() {
     const [faqs, setFaqs] = useState([]);
-    const [categories, setCategories] =
-        useState([]);
-
+    const [categories, setCategories] = useState([]);
     const [meta, setMeta] = useState(null);
 
     const [page, setPage] = useState(1);
-    const [searchInput, setSearchInput] =
-        useState("");
+    const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
-    const [categorySlug, setCategorySlug] =
-        useState("");
+    const [categorySlug, setCategorySlug] = useState("");
     const [status, setStatus] = useState("");
 
-    const [loading, setLoading] =
-        useState(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [categoryError, setCategoryError] = useState("");
+
+    const [faqToDelete, setFaqToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const deleteInProgress = useRef(false);
 
     useEffect(() => {
+        let active = true;
+
         async function loadCategories() {
             try {
-                const result =
-                    await getCategories();
+                const result = await getCategories();
 
-                setCategories(
-                    extractCategories(result)
-                );
+                if (!active) return;
+
+                setCategories(extractCategories(result));
+                setCategoryError("");
             } catch (err) {
-                setError(err.message);
+                if (active) {
+                    setCategoryError(
+                        err.message || "Gagal mengambil kategori."
+                    );
+                }
             }
         }
 
         loadCategories();
+
+        return () => {
+            active = false;
+        };
     }, []);
 
     useEffect(() => {
+        const keyword = searchInput.trim();
+
+        if (keyword === search) return;
+
         const timeoutId = setTimeout(() => {
-            setSearch(searchInput.trim());
+            setSearch(keyword);
             setPage(1);
         }, 400);
 
         return () => clearTimeout(timeoutId);
-    }, [searchInput]);
+    }, [searchInput, search]);
 
     useEffect(() => {
+        let active = true;
+        let changingPage = false;
+
         async function loadFaqs() {
             try {
                 setLoading(true);
@@ -93,29 +111,53 @@ export default function FaqListPage() {
                     limit: 10,
                 });
 
+                if (!active) return;
+
+                const nextMeta = result?.meta ?? null;
+
+                if (nextMeta) {
+                    const lastPage = Math.max(
+                        1,
+                        Number(nextMeta.totalPages) || 0
+                    );
+
+                    // Jika halaman terakhir kosong setelah penghapusan,
+                    // kembali ke halaman terakhir yang masih tersedia.
+                    if (page > lastPage) {
+                        changingPage = true;
+                        setPage(lastPage);
+                        return;
+                    }
+                }
+
                 setFaqs(
                     Array.isArray(result?.data)
                         ? result.data
                         : []
                 );
 
-                setMeta(result?.meta ?? null);
+                setMeta(nextMeta);
             } catch (err) {
+                if (!active) return;
+
                 setFaqs([]);
                 setMeta(null);
-                setError(err.message);
+                setError(
+                    err.message || "Gagal mengambil daftar FAQ."
+                );
             } finally {
-                setLoading(false);
+                if (active && !changingPage) {
+                    setLoading(false);
+                }
             }
         }
 
         loadFaqs();
-    }, [
-        search,
-        categorySlug,
-        status,
-        page,
-    ]);
+
+        return () => {
+            active = false;
+        };
+    }, [search, categorySlug, status, page, refreshKey]);
 
     function handleCategoryChange(event) {
         setCategorySlug(event.target.value);
@@ -128,17 +170,55 @@ export default function FaqListPage() {
     }
 
     function handlePreviousPage() {
-        if (page > 1) {
-            setPage(page - 1);
-        }
+        if (loading || page <= 1) return;
+
+        setPage((current) => current - 1);
     }
 
     function handleNextPage() {
-        if (
-            meta &&
-            page < meta.totalPages
-        ) {
-            setPage(page + 1);
+        if (loading || !meta?.hasNextPage) return;
+
+        setPage((current) => current + 1);
+    }
+
+    function handleOpenDelete(faq) {
+        if (deleteInProgress.current) return;
+
+        setDeleteError("");
+        setSuccess("");
+        setFaqToDelete(faq);
+    }
+
+    function handleCancelDelete() {
+        if (deleteInProgress.current) return;
+
+        setFaqToDelete(null);
+        setDeleteError("");
+    }
+
+    async function handleConfirmDelete() {
+        if (!faqToDelete || deleteInProgress.current) return;
+
+        try {
+            deleteInProgress.current = true;
+            setDeleting(true);
+            setDeleteError("");
+
+            await deleteCmsFaq(faqToDelete.id);
+
+            setFaqToDelete(null);
+            setSuccess("FAQ berhasil dihapus.");
+
+            // Muat ulang daftar, jumlah FAQ, dan pagination.
+            setLoading(true);
+            setRefreshKey((current) => current + 1);
+        } catch (err) {
+            setDeleteError(
+                err.message || "Gagal menghapus FAQ."
+            );
+        } finally {
+            deleteInProgress.current = false;
+            setDeleting(false);
         }
     }
 
@@ -151,7 +231,7 @@ export default function FaqListPage() {
                     </h1>
 
                     <p className="mt-2 text-slate-600">
-                        Tambah dan perbarui konten FAQ.
+                        Tambah, perbarui, dan hapus konten FAQ.
                     </p>
                 </div>
 
@@ -169,16 +249,16 @@ export default function FaqListPage() {
                     <div className="relative">
                         <Search
                             size={20}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                         />
 
                         <input
                             type="search"
+                            aria-label="Cari pertanyaan FAQ"
                             value={searchInput}
                             onChange={(event) =>
-                                setSearchInput(
-                                    event.target.value
-                                )
+                                setSearchInput(event.target.value)
                             }
                             placeholder="Cari pertanyaan..."
                             className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
@@ -186,72 +266,86 @@ export default function FaqListPage() {
                     </div>
 
                     <select
+                        aria-label="Filter kategori"
                         value={categorySlug}
                         onChange={handleCategoryChange}
                         className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                     >
-                        <option value="">
-                            Semua kategori
-                        </option>
+                        <option value="">Semua kategori</option>
 
-                        {categories.map(
-                            (category) => (
-                                <option
-                                    key={category.id}
-                                    value={category.slug}
-                                >
-                                    {category.name}
-                                </option>
-                            )
-                        )}
+                        {categories.map((category) => (
+                            <option
+                                key={category.id}
+                                value={category.slug}
+                            >
+                                {category.name}
+                            </option>
+                        ))}
                     </select>
 
                     <select
+                        aria-label="Filter status publikasi"
                         value={status}
                         onChange={handleStatusChange}
                         className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                     >
-                        <option value="">
-                            Semua status
-                        </option>
-
-                        <option value="published">
-                            Terbit
-                        </option>
-
-                        <option value="draft">
-                            Draft
-                        </option>
+                        <option value="">Semua status</option>
+                        <option value="published">Terbit</option>
+                        <option value="draft">Draf</option>
                     </select>
                 </div>
 
+                {success && (
+                    <div
+                        role="status"
+                        className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700"
+                    >
+                        {success}
+                    </div>
+                )}
+
+                {categoryError && (
+                    <div
+                        role="alert"
+                        className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800"
+                    >
+                        Filter kategori tidak dapat dimuat: {categoryError}
+                    </div>
+                )}
+
                 {error && (
-                    <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">
+                    <div
+                        role="alert"
+                        className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600"
+                    >
                         {error}
                     </div>
                 )}
 
                 <div className="mt-6 overflow-x-auto">
-                    <table className="w-full min-w-[800px] text-left">
+                    <table
+                        aria-label="Daftar FAQ"
+                        aria-busy={loading}
+                        className="w-full min-w-[800px] text-left"
+                    >
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
-                                <th className="px-4 py-4">
+                                <th scope="col" className="px-4 py-4">
                                     Pertanyaan
                                 </th>
-
-                                <th className="px-4 py-4">
+                                <th scope="col" className="px-4 py-4">
                                     Kategori
                                 </th>
-
-                                <th className="px-4 py-4">
+                                <th scope="col" className="px-4 py-4">
                                     Topik
                                 </th>
-
-                                <th className="px-4 py-4">
+                                <th scope="col" className="px-4 py-4">
                                     Status
                                 </th>
-
-                                <th className="px-4 py-4 text-right">
+                                <th
+                                    scope="col"
+                                    className="px-4 py-4 text-right"
+                                >
                                     Aksi
                                 </th>
                             </tr>
@@ -261,16 +355,39 @@ export default function FaqListPage() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan={5}
                                         className="px-4 py-16 text-center text-slate-500"
                                     >
                                         Memuat data FAQ...
                                     </td>
                                 </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td
+                                        colSpan={5}
+                                        className="px-4 py-16 text-center"
+                                    >
+                                        <p className="text-slate-500">
+                                            Daftar FAQ belum dapat ditampilkan.
+                                        </p>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setRefreshKey(
+                                                    (current) => current + 1
+                                                )
+                                            }
+                                            className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                                        >
+                                            Coba lagi
+                                        </button>
+                                    </td>
+                                </tr>
                             ) : faqs.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan={5}
                                         className="px-4 py-16 text-center text-slate-500"
                                     >
                                         FAQ tidak ditemukan.
@@ -295,13 +412,11 @@ export default function FaqListPage() {
                                         </td>
 
                                         <td className="px-4 py-4 text-sm text-slate-600">
-                                            {faq.category?.name ??
-                                                "-"}
+                                            {faq.category?.name ?? "-"}
                                         </td>
 
                                         <td className="px-4 py-4 text-sm text-slate-600">
-                                            {faq.topic?.name ??
-                                                "-"}
+                                            {faq.topic?.name ?? "-"}
                                         </td>
 
                                         <td className="px-4 py-4">
@@ -313,20 +428,32 @@ export default function FaqListPage() {
                                             >
                                                 {faq.isPublished
                                                     ? "Terbit"
-                                                    : "Draft"}
+                                                    : "Draf"}
                                             </span>
                                         </td>
 
                                         <td className="px-4 py-4 text-right">
-                                            <Link
-                                                to={`/faqs/${faq.id}/edit`}
-                                                aria-label={`Edit ${faq.question}`}
-                                                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
-                                            >
-                                                <Pencil
-                                                    size={18}
-                                                />
-                                            </Link>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Link
+                                                    to={`/faqs/${faq.id}/edit`}
+                                                    aria-label={`Edit ${faq.question}`}
+                                                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                                >
+                                                    <Pencil size={18} />
+                                                </Link>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleOpenDelete(faq)
+                                                    }
+                                                    disabled={deleting}
+                                                    aria-label={`Hapus ${faq.question}`}
+                                                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -335,24 +462,24 @@ export default function FaqListPage() {
                     </table>
                 </div>
 
-                {!loading && meta && (
+                {!loading && !error && meta && (
                     <div className="mt-6 flex flex-col gap-4 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-slate-500">
                             Total {meta.totalItems} FAQ
                         </p>
 
-                        <div className="flex items-center gap-3">
+                        <nav
+                            aria-label="Pagination FAQ"
+                            className="flex items-center gap-3"
+                        >
                             <button
                                 type="button"
+                                aria-label="Halaman sebelumnya"
                                 onClick={handlePreviousPage}
-                                disabled={
-                                    !meta.hasPreviousPage
-                                }
+                                disabled={!meta.hasPreviousPage}
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <ChevronLeft
-                                    size={18}
-                                />
+                                <ChevronLeft size={18} />
                             </button>
 
                             <span className="text-sm text-slate-600">
@@ -362,20 +489,25 @@ export default function FaqListPage() {
 
                             <button
                                 type="button"
+                                aria-label="Halaman selanjutnya"
                                 onClick={handleNextPage}
-                                disabled={
-                                    !meta.hasNextPage
-                                }
+                                disabled={!meta.hasNextPage}
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:cursor-not-allowed disabled:opacity-40"
                             >
-                                <ChevronRight
-                                    size={18}
-                                />
+                                <ChevronRight size={18} />
                             </button>
-                        </div>
+                        </nav>
                     </div>
                 )}
             </div>
+
+            <DeleteFaqModal
+                faq={faqToDelete}
+                deleting={deleting}
+                error={deleteError}
+                onCancel={handleCancelDelete}
+                onConfirm={handleConfirmDelete}
+            />
         </section>
     );
 }

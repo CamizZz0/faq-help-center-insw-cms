@@ -27,20 +27,6 @@ export default function App() {
         />
 
         <Route
-          path="subcategories"
-          element={
-            <PlaceholderPage title="Kelola Subkategori" />
-          }
-        />
-
-        <Route
-          path="topics"
-          element={
-            <PlaceholderPage title="Kelola Topik" />
-          }
-        />
-
-        <Route
           path="faqs"
           element={<FaqListPage />}
         />
@@ -53,20 +39,6 @@ export default function App() {
         <Route
           path="faqs/:faqId/edit"
           element={<FaqFormPage />}
-        />
-
-        <Route
-          path="guides"
-          element={
-            <PlaceholderPage title="Kelola Panduan" />
-          }
-        />
-
-        <Route
-          path="tutorials"
-          element={
-            <PlaceholderPage title="Kelola Tutorial" />
-          }
         />
       </Route>
     </Routes>

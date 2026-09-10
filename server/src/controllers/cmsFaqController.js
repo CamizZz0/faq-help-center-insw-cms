@@ -672,3 +672,43 @@ export async function updateCmsFaq(req, res) {
         });
     }
 }
+
+export async function deleteCmsFaq(req, res) {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({
+                success: false,
+                message: "ID FAQ tidak valid",
+            });
+        }
+
+        const [deletedFaq] = await db
+            .delete(faqs)
+            .where(eq(faqs.id, id))
+            .returning({
+                id: faqs.id,
+            });
+
+        if (!deletedFaq) {
+            return res.status(404).json({
+                success: false,
+                message: "FAQ tidak ditemukan",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "FAQ berhasil dihapus",
+            data: deletedFaq,
+        });
+    } catch (error) {
+        console.error("Gagal menghapus FAQ CMS:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan saat menghapus FAQ",
+        });
+    }
+}

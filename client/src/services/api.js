@@ -93,3 +93,12 @@ export function updateCmsFaq(id, payload) {
         }
     );
 }
+
+export function deleteCmsFaq(id) {
+    return request(
+        `/cms/faqs/${encodeURIComponent(id)}`,
+        {
+            method: "DELETE",
+        }
+    );
+}
