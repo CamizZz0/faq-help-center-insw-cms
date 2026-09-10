@@ -411,3 +411,264 @@ export async function createCmsFaq(req, res) {
         });
     }
 }
+
+export async function getCmsFaqById(req, res) {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({
+                success: false,
+                message: "ID FAQ tidak valid",
+            });
+        }
+
+        const [faq] = await db
+            .select({
+                id: faqs.id,
+                question: faqs.question,
+                answer: faqs.answer,
+                isPopular: faqs.isPopular,
+                isPublished: faqs.isPublished,
+                sortOrder: faqs.sortOrder,
+
+                topic: {
+                    id: faqTopics.id,
+                    name: faqTopics.name,
+                    slug: faqTopics.slug,
+                },
+
+                subcategory: {
+                    id: subcategories.id,
+                    name: subcategories.name,
+                    slug: subcategories.slug,
+                },
+
+                category: {
+                    id: categories.id,
+                    name: categories.name,
+                    slug: categories.slug,
+                },
+            })
+            .from(faqs)
+            .innerJoin(
+                faqTopics,
+                eq(faqs.topicId, faqTopics.id)
+            )
+            .innerJoin(
+                subcategories,
+                eq(faqTopics.subcategoryId, subcategories.id)
+            )
+            .innerJoin(
+                categories,
+                eq(subcategories.categoryId, categories.id)
+            )
+            .where(eq(faqs.id, id))
+            .limit(1);
+
+        if (!faq) {
+            return res.status(404).json({
+                success: false,
+                message: "FAQ tidak ditemukan",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Detail FAQ berhasil diambil",
+            data: faq,
+        });
+    } catch (error) {
+        console.error("Gagal mengambil detail FAQ CMS:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan saat mengambil detail FAQ",
+        });
+    }
+}
+
+export async function updateCmsFaq(req, res) {
+    try {
+        const id = Number(req.params.id);
+
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({
+                success: false,
+                message: "ID FAQ tidak valid",
+            });
+        }
+
+        const [existingFaq] = await db
+            .select({ id: faqs.id })
+            .from(faqs)
+            .where(eq(faqs.id, id))
+            .limit(1);
+
+        if (!existingFaq) {
+            return res.status(404).json({
+                success: false,
+                message: "FAQ tidak ditemukan",
+            });
+        }
+
+        const body = req.body;
+
+        if (!body || typeof body !== "object" || Array.isArray(body)) {
+            return res.status(400).json({
+                success: false,
+                message: "Body harus berupa objek JSON",
+            });
+        }
+
+        const updates = {};
+
+        if (body.topicId !== undefined) {
+            const topicId = Number(body.topicId);
+
+            if (
+                !["string", "number"].includes(typeof body.topicId) ||
+                !Number.isInteger(topicId) ||
+                topicId < 1
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Topik FAQ tidak valid",
+                });
+            }
+
+            const [topic] = await db
+                .select({ id: faqTopics.id })
+                .from(faqTopics)
+                .where(eq(faqTopics.id, topicId))
+                .limit(1);
+
+            if (!topic) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Topik FAQ tidak ditemukan",
+                });
+            }
+
+            updates.topicId = topicId;
+        }
+
+        if (body.question !== undefined) {
+            if (
+                typeof body.question !== "string" ||
+                body.question.trim().length < 5
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Pertanyaan minimal 5 karakter",
+                });
+            }
+
+            updates.question = body.question.trim();
+        }
+
+        if (body.answer !== undefined) {
+            if (typeof body.answer !== "string") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Jawaban harus berupa teks",
+                });
+            }
+
+            const sanitizedAnswer = cleanAnswer(body.answer).trim();
+
+            // Memastikan HTML seperti <p><br></p> tidak dianggap jawaban.
+            const answerText = sanitizeHtml(sanitizedAnswer, {
+                allowedTags: [],
+                allowedAttributes: {},
+            })
+                .replace(/&nbsp;|&#160;|&#xA0;/gi, " ")
+                .replace(/[\u00A0\u200B-\u200D\uFEFF]/g, " ")
+                .trim();
+
+            if (!answerText) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Jawaban FAQ wajib diisi",
+                });
+            }
+
+            updates.answer = sanitizedAnswer;
+        }
+
+        if (body.sortOrder !== undefined) {
+            const sortOrder = Number(body.sortOrder);
+
+            if (
+                !["string", "number"].includes(typeof body.sortOrder) ||
+                String(body.sortOrder).trim() === "" ||
+                !Number.isInteger(sortOrder) ||
+                sortOrder < 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Urutan harus berupa bilangan bulat minimal 0",
+                });
+            }
+
+            updates.sortOrder = sortOrder;
+        }
+
+        for (const field of ["isPopular", "isPublished"]) {
+            if (body[field] !== undefined) {
+                if (typeof body[field] !== "boolean") {
+                    return res.status(400).json({
+                        success: false,
+                        message: `${field} harus berupa boolean`,
+                    });
+                }
+
+                updates[field] = body[field];
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Tidak ada field FAQ yang dikirim untuk diperbarui",
+            });
+        }
+
+        updates.updatedAt = new Date();
+
+        const [updatedFaq] = await db
+            .update(faqs)
+            .set(updates)
+            .where(eq(faqs.id, id))
+            .returning({
+                id: faqs.id,
+                topicId: faqs.topicId,
+                question: faqs.question,
+                answer: faqs.answer,
+                isPopular: faqs.isPopular,
+                isPublished: faqs.isPublished,
+                sortOrder: faqs.sortOrder,
+                updatedAt: faqs.updatedAt,
+            });
+
+        if (!updatedFaq) {
+            return res.status(404).json({
+                success: false,
+                message: "FAQ tidak ditemukan",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "FAQ berhasil diperbarui",
+            data: updatedFaq,
+        });
+    } catch (error) {
+        console.error("Gagal memperbarui FAQ CMS:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan saat memperbarui FAQ",
+        });
+    }
+}
