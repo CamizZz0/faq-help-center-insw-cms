@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Save, X } from "lucide-react";
 
 import {
@@ -60,12 +60,6 @@ export default function CategoryForm({
     const [error, setError] = useState("");
 
     const submitInProgress = useRef(false);
-
-    useEffect(() => {
-        setForm(createInitialForm(category));
-        setSlugEdited(isEdit);
-        setError("");
-    }, [category, isEdit]);
 
     function updateField(name, value) {
         setForm((current) => ({

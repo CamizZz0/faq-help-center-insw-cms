@@ -8,7 +8,6 @@ import DashboardPage from "./pages/cms/DashboardPage";
 import FaqListPage from "./pages/cms/FaqListPage";
 import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
-import FaqEditPage from "./pages/cms/FaqEditPage";
 import CategoryPage from "./pages/cms/CategoryPage";
 
 export default function App() {
@@ -18,6 +17,21 @@ export default function App() {
         <Route
           index
           element={<DashboardPage />}
+        />
+
+        <Route
+          path="categories"
+          element={<CategoryPage />}
+        />
+
+        <Route
+          path="subcategories"
+          element={<PlaceholderPage title="Kelola Subkategori" />}
+        />
+
+        <Route
+          path="topics"
+          element={<PlaceholderPage title="Kelola Topik" />}
         />
 
         <Route
@@ -36,8 +50,13 @@ export default function App() {
         />
 
         <Route
-          path="categories"
-          element={<CategoryPage />}
+          path="guides"
+          element={<PlaceholderPage title="Kelola Panduan" />}
+        />
+
+        <Route
+          path="tutorials"
+          element={<PlaceholderPage title="Kelola Tutorial" />}
         />
       </Route>
     </Routes>
