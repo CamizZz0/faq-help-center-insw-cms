@@ -77,3 +77,19 @@ export function createCmsFaq(payload) {
         body: JSON.stringify(payload),
     });
 }
+
+export function getCmsFaqById(id) {
+    return request(
+        `/cms/faqs/${encodeURIComponent(id)}`
+    );
+}
+
+export function updateCmsFaq(id, payload) {
+    return request(
+        `/cms/faqs/${encodeURIComponent(id)}`,
+        {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        }
+    );
+}

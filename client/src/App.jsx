@@ -8,6 +8,7 @@ import DashboardPage from "./pages/cms/DashboardPage";
 import FaqListPage from "./pages/cms/FaqListPage";
 import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
+import FaqEditPage from "./pages/cms/FaqEditPage";
 
 export default function App() {
   return (
@@ -51,9 +52,7 @@ export default function App() {
 
         <Route
           path="faqs/:faqId/edit"
-          element={
-            <PlaceholderPage title="Edit FAQ" />
-          }
+          element={<FaqFormPage />}
         />
 
         <Route
