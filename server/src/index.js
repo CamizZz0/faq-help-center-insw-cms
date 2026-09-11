@@ -15,6 +15,8 @@ import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
 import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
 import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
 
+import { supabase } from "./config/supabase.js";
+
 const app = express();
 
 const PORT = process.env.PORT || 5001;
@@ -79,6 +81,41 @@ app.get("/api/health", async (req, res) => {
             success: false,
             message:
                 "Gagal terhubung ke PostgreSQL",
+        });
+    }
+});
+
+app.get("/api/health/storage", async (req, res) => {
+    try {
+        const bucketName =
+            process.env.SUPABASE_GUIDES_BUCKET ?? "guides";
+
+        const { data, error } =
+            await supabase.storage.getBucket(bucketName);
+
+        if (error) {
+            throw error;
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Supabase Storage berhasil terhubung",
+            bucket: {
+                id: data.id,
+                name: data.name,
+                public: data.public,
+            },
+        });
+    } catch (error) {
+        console.error(
+            "Gagal terhubung ke Supabase Storage:",
+            error,
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Supabase Storage gagal terhubung",
+            error: error.message,
         });
     }
 });

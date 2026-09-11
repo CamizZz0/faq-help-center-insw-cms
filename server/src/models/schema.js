@@ -166,6 +166,8 @@ export const guides = pgTable("guides", {
 
     thumbnailUrl: text("thumbnail_url"),
 
+    filePath: text("file_path"),
+
     sortOrder: integer("sort_order")
         .notNull()
         .default(0),
