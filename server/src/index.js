@@ -11,6 +11,7 @@ import topicRoutes from "./routes/topicRoutes.js";
 import faqRoutes from "./routes/faqRoutes.js";
 import guideRoutes from "./routes/guideRoutes.js";
 import tutorialRoutes from "./routes/tutorialRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
 import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
 import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
@@ -60,6 +61,7 @@ app.use("/api/cms/guides", cmsGuideRoutes);
 app.use("/api/cms/tutorials", cmsTutorialRoutes);
 app.use("/api/guides", guideRoutes);
 app.use("/api/tutorials", tutorialRoutes);
+app.use("/api/search", searchRoutes);
 
 app.use("/api/cms/faqs", cmsFaqRoutes);
 
