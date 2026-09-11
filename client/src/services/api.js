@@ -161,3 +161,23 @@ export function updateCmsGuide(id, payload) {
 export function deleteCmsGuide(id) {
     return request(`/cms/guides/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
+
+export function getCmsTutorials(params = {}) {
+    return request(`/cms/tutorials${createQuery(params)}`);
+}
+
+export function getCmsTutorialById(id) {
+    return request(`/cms/tutorials/${encodeURIComponent(id)}`);
+}
+
+export function createCmsTutorial(payload) {
+    return request("/cms/tutorials", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function updateCmsTutorial(id, payload) {
+    return request(`/cms/tutorials/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) });
+}
+
+export function deleteCmsTutorial(id) {
+    return request(`/cms/tutorials/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

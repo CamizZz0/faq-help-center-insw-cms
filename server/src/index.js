@@ -14,6 +14,7 @@ import tutorialRoutes from "./routes/tutorialRoutes.js";
 import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
 import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
 import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
+import cmsTutorialRoutes from "./routes/cmsTutorialRoutes.js";
 
 import { supabase } from "./config/supabase.js";
 
@@ -56,6 +57,7 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/cms/categories", cmsCategoryRoutes);
 app.use("/api/cms/guides", cmsGuideRoutes);
+app.use("/api/cms/tutorials", cmsTutorialRoutes);
 app.use("/api/guides", guideRoutes);
 app.use("/api/tutorials", tutorialRoutes);
 

@@ -11,6 +11,8 @@ import FaqFormPage from "./pages/cms/FaqFormPage";
 import CategoryPage from "./pages/cms/CategoryPage";
 import GuideListPage from "./pages/cms/GuideListPage";
 import GuideFormPage from "./pages/cms/GuideFormPage";
+import TutorialListPage from "./pages/cms/TutorialListPage";
+import TutorialFormPage from "./pages/cms/TutorialFormPage";
 
 export default function App() {
   return (
@@ -61,8 +63,10 @@ export default function App() {
 
         <Route
           path="tutorials"
-          element={<PlaceholderPage title="Kelola Tutorial" />}
+          element={<TutorialListPage />}
         />
+        <Route path="tutorials/new" element={<TutorialFormPage />} />
+        <Route path="tutorials/:tutorialId/edit" element={<TutorialFormPage />} />
       </Route>
     </Routes>
   );
