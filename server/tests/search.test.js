@@ -47,7 +47,7 @@ test("Unified public search (transaction rollback)", { timeout: 30000 }, async (
         )).rows[0];
         const firstFaq = (await client.query(
             "INSERT INTO faqs (topic_id, question, answer, sort_order, is_published) VALUES ($1, $2, $3, 1, true) RETURNING id",
-            [topic.id, "Pertanyaan pertama", "Jawaban netral"],
+            [topic.id, `Pertanyaan ${token}`, "Jawaban netral"],
         )).rows[0];
         await client.query(
             "INSERT INTO faqs (topic_id, question, answer, sort_order, is_published) VALUES ($1, $2, $3, 2, true)",
@@ -74,8 +74,8 @@ test("Unified public search (transaction rollback)", { timeout: 30000 }, async (
         await client.query("INSERT INTO guides (title, slug, file_url, is_published) VALUES ($1, $2, $3, false)", [`Draft ${token}`, `guide-draft-${token}`, "https://example.com/draft.pdf"]);
 
         const firstTutorial = (await client.query(
-            "INSERT INTO tutorials (title, slug, description, video_url, thumbnail_url, duration_seconds, sort_order, is_published) VALUES ('Tutorial netral', $1, $2, $3, $4, 90, 1, true) RETURNING id",
-            [`tutorial-one-${token}`, `Deskripsi ${token}`, "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"],
+            "INSERT INTO tutorials (title, slug, description, video_url, thumbnail_url, duration_seconds, sort_order, is_published) VALUES ($1, $2, 'netral', $3, $4, 90, 1, true) RETURNING id",
+            [`Tutorial ${token}`, `tutorial-one-${token}`, "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg"],
         )).rows[0];
         await client.query(
             "INSERT INTO tutorials (category_id, title, slug, description, video_url, sort_order, is_published) VALUES ($1, 'Tutorial netral', $2, 'netral', $3, 2, true)",
@@ -91,21 +91,27 @@ test("Unified public search (transaction rollback)", { timeout: 30000 }, async (
             return result;
         }
 
-        await t.test("returns limited grouped data and complete counts", async () => {
+        await t.test("searches titles only and paginates the combined result", async () => {
             const result = await request(`?q=%20${token.toUpperCase()}%20&limit=1`);
-            assert.deepEqual(Object.keys(result.data).sort(), ["faqs", "guides", "tutorials"]);
-            assert.deepEqual(result.meta.counts, { faqs: 2, guides: 2, tutorials: 2 });
-            assert.equal(result.meta.totalItems, 6);
+            assert.deepEqual(Object.keys(result.data), ["results"]);
+            assert.deepEqual(result.meta.counts, { faqs: 1, guides: 1, tutorials: 1 });
+            assert.equal(result.meta.totalItems, 3);
             assert.equal(result.meta.limit, 1);
             assert.equal(result.meta.query, token.toUpperCase());
-            assert.equal(result.data.faqs.length, 1);
-            assert.equal(result.data.guides.length, 1);
-            assert.equal(result.data.tutorials.length, 1);
-            assert.equal(result.data.faqs[0].id, firstFaq.id);
-            assert.equal(result.data.guides[0].id, firstGuide.id);
-            assert.equal(result.data.tutorials[0].id, firstTutorial.id);
-            assert.equal(result.data.guides[0].category, null);
-            assert.equal(result.data.tutorials[0].category, null);
+            assert.equal(result.data.results.length, 1);
+            assert.equal(result.data.results[0].id, firstFaq.id);
+            assert.equal(result.data.results[0].resultType, "faq");
+
+            const guidePage = await request(`?q=${token}&limit=1&page=2`);
+            assert.equal(guidePage.data.results[0].id, firstGuide.id);
+            assert.equal(guidePage.data.results[0].resultType, "guide");
+            assert.equal("category" in guidePage.data.results[0], false);
+
+            const tutorialPage = await request(`?q=${token}&limit=1&page=3`);
+            assert.equal(tutorialPage.data.results[0].id, firstTutorial.id);
+            assert.equal(tutorialPage.data.results[0].resultType, "tutorial");
+            assert.equal("category" in tutorialPage.data.results[0], false);
+            assert.equal("durationSeconds" in tutorialPage.data.results[0], false);
         });
 
         await t.test("validates q and limit", async () => {

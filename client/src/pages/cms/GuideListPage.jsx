@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, FileText, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { deleteCmsGuide, getCmsCategories, getCmsGuides } from "../../services/api";
+import { deleteCmsGuide, getCmsGuides } from "../../services/api";
 import DeleteGuideModal from "../../components/cms/DeleteGuideModal";
 
 export default function GuideListPage() {
     const location = useLocation();
     const [success, setSuccess] = useState(location.state?.message ?? "");
     const [guides, setGuides] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [categoryError, setCategoryError] = useState("");
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("");
     const [status, setStatus] = useState("");
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState(null);
@@ -26,25 +23,11 @@ export default function GuideListPage() {
 
     useEffect(() => {
         let active = true;
-        async function loadCategories() {
-            try {
-                const result = await getCmsCategories();
-                if (active) setCategories(result.data);
-            } catch (err) {
-                if (active) setCategoryError(err.message);
-            }
-        }
-        loadCategories();
-        return () => { active = false; };
-    }, []);
-
-    useEffect(() => {
-        let active = true;
         async function loadGuides() {
             try {
                 setLoading(true);
                 setError("");
-                const result = await getCmsGuides({ search, category, status, page, limit: 10 });
+                const result = await getCmsGuides({ search, status, page, limit: 10 });
                 if (!active) return;
                 const lastPage = Math.max(result.meta.totalPages, 1);
                 if (page > lastPage) { setPage(lastPage); return; }
@@ -58,7 +41,7 @@ export default function GuideListPage() {
         }
         loadGuides();
         return () => { active = false; };
-    }, [search, category, status, page, refreshKey]);
+    }, [search, status, page, refreshKey]);
 
     function cancelDelete() {
         if (deletingRef.current) return;
@@ -97,7 +80,7 @@ export default function GuideListPage() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="grid gap-4 lg:grid-cols-[1fr_240px_180px]">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
                     <form role="search" onSubmit={event => { event.preventDefault(); setSearch(searchInput.trim()); setPage(1); }} className="relative">
                         <button type="submit" aria-label="Cari panduan" className="absolute inset-y-0 left-0 flex w-11 items-center justify-center rounded-l-xl text-slate-400 hover:text-blue-600">
                             <Search size={20} aria-hidden="true" />
@@ -105,11 +88,6 @@ export default function GuideListPage() {
                         <input id="guide-search" type="search" aria-label="Cari judul panduan" placeholder="Cari judul panduan..." value={searchInput} onChange={event => setSearchInput(event.target.value)}
                             className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
                     </form>
-                    <select id="guide-category-filter" aria-label="Filter kategori" value={category} onChange={event => { setCategory(event.target.value); setPage(1); }}
-                        className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500">
-                        <option value="">Semua kategori</option>
-                        {categories.map(item => <option key={item.id} value={item.slug}>{item.name}{!item.isActive ? " (nonaktif)" : ""}</option>)}
-                    </select>
                     <select id="guide-status-filter" aria-label="Filter status publikasi" value={status} onChange={event => { setStatus(event.target.value); setPage(1); }}
                         className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500">
                         <option value="">Semua status</option><option value="published">Terbit</option><option value="draft">Draf</option>
@@ -117,15 +95,13 @@ export default function GuideListPage() {
                 </div>
 
                 {success && <p role="status" className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">{success}</p>}
-                {categoryError && <p role="alert" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">Filter kategori tidak dapat dimuat: {categoryError}</p>}
                 {error && <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</p>}
 
                 <div className="mt-6 overflow-x-auto">
-                    <table aria-label="Daftar Panduan" aria-busy={loading} className="w-full min-w-[800px] text-left">
+                    <table aria-label="Daftar Panduan" aria-busy={loading} className="w-full min-w-[700px] text-left">
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
                                 <th scope="col" className="px-4 py-4">Judul</th>
-                                <th scope="col" className="px-4 py-4">Kategori</th>
                                 <th scope="col" className="px-4 py-4">Urutan</th>
                                 <th scope="col" className="px-4 py-4">Status</th>
                                 <th scope="col" className="px-4 py-4 text-right">Aksi</th>
@@ -133,11 +109,11 @@ export default function GuideListPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={5} className="px-4 py-16 text-center text-slate-500">Memuat data panduan...</td></tr>
+                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Memuat data panduan...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan={5} className="px-4 py-16 text-center text-slate-500">Daftar panduan belum dapat ditampilkan.</td></tr>
+                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Daftar panduan belum dapat ditampilkan.</td></tr>
                             ) : guides.length === 0 ? (
-                                <tr><td colSpan={5} className="px-4 py-16 text-center text-slate-500">Panduan tidak ditemukan.</td></tr>
+                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Panduan tidak ditemukan.</td></tr>
                             ) : guides.map(guide => (
                                 <tr key={guide.id} className="border-b border-slate-100 last:border-none hover:bg-slate-50">
                                     <td className="max-w-md px-4 py-4">
@@ -146,7 +122,6 @@ export default function GuideListPage() {
                                             <p className="line-clamp-2 font-medium text-slate-900" title={guide.title}>{guide.title}</p>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{guide.category?.name ?? "Tanpa kategori"}</td>
                                     <td className="px-4 py-4 text-sm text-slate-600">{guide.sortOrder}</td>
                                     <td className="px-4 py-4">
                                         <span className={"inline-flex rounded-full px-3 py-1 text-xs font-semibold " + (guide.isPublished ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700")}>{guide.isPublished ? "Terbit" : "Draf"}</span>

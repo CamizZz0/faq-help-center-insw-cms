@@ -1,42 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Pencil, PlayCircle, Plus, Search, Trash2 } from "lucide-react";
-import { deleteCmsTutorial, getCmsCategories, getCmsTutorials } from "../../services/api";
+import { deleteCmsTutorial, getCmsTutorials } from "../../services/api";
 import DeleteTutorialModal from "../../components/cms/DeleteTutorialModal";
-
-function formatDuration(seconds) {
-    if (seconds == null) return "–";
-    const minutes = Math.floor(seconds / 60);
-    const remainder = seconds % 60;
-    return `${minutes}:${String(remainder).padStart(2, "0")}`;
-}
 
 export default function TutorialListPage() {
     const location = useLocation();
     const [success, setSuccess] = useState(location.state?.message ?? "");
     const [tutorials, setTutorials] = useState([]);
-    const [categories, setCategories] = useState([]);
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("");
     const [status, setStatus] = useState("");
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [categoryError, setCategoryError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
     const [tutorialToDelete, setTutorialToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
     const deletingRef = useRef(false);
-
-    useEffect(() => {
-        let active = true;
-        getCmsCategories().then((result) => { if (active) setCategories(result.data ?? []); })
-            .catch((err) => { if (active) setCategoryError(err.message); });
-        return () => { active = false; };
-    }, []);
 
     useEffect(() => {
         const keyword = searchInput.trim();
@@ -51,7 +34,7 @@ export default function TutorialListPage() {
             try {
                 setLoading(true);
                 setError("");
-                const result = await getCmsTutorials({ page, limit: 10, search, category, status });
+                const result = await getCmsTutorials({ page, limit: 10, search, status });
                 if (!active) return;
                 setTutorials(result.data ?? []);
                 setMeta(result.meta ?? null);
@@ -60,7 +43,7 @@ export default function TutorialListPage() {
         }
         load();
         return () => { active = false; };
-    }, [page, search, category, status, refreshKey]);
+    }, [page, search, status, refreshKey]);
 
     async function confirmDelete() {
         if (!tutorialToDelete || deletingRef.current) return;
@@ -86,20 +69,18 @@ export default function TutorialListPage() {
 
             {success && <div role="status" className="mt-6 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700"><span>{success}</span><button type="button" onClick={() => setSuccess("")} className="font-semibold">Tutup</button></div>}
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_180px]">
-                    <label className="relative"><span className="sr-only">Cari tutorial</span><Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Cari judul atau deskripsi..." className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" /></label>
-                    <select aria-label="Filter kategori" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"><option value="">Semua kategori</option>{categories.map((item) => <option key={item.id} value={item.slug}>{item.name}</option>)}</select>
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
+                    <label className="relative"><span className="sr-only">Cari tutorial</span><Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Cari judul tutorial..." className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" /></label>
                     <select aria-label="Filter status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }} className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"><option value="">Semua status</option><option value="published">Terbit</option><option value="draft">Draft</option></select>
                 </div>
-                {categoryError && <p role="alert" className="mt-3 text-sm text-red-600">{categoryError}</p>}
             </div>
 
             <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
                 {loading ? <p className="p-8 text-center text-slate-600">Memuat data tutorial...</p>
                     : error ? <p role="alert" className="m-5 rounded-xl bg-red-50 p-4 text-red-600">{error}</p>
                     : tutorials.length === 0 ? <div className="p-10 text-center"><PlayCircle size={40} className="mx-auto text-slate-400" /><h2 className="mt-3 font-semibold text-slate-900">Tutorial belum tersedia</h2><p className="mt-1 text-sm text-slate-500">Tambahkan tutorial atau ubah filter pencarian.</p></div>
-                    : <div className="overflow-x-auto"><table className="w-full min-w-[900px] table-fixed text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="w-[38%] px-5 py-4">Tutorial</th><th className="w-[17%] px-5 py-4">Kategori</th><th className="w-[10%] px-5 py-4">Durasi</th><th className="w-[9%] px-5 py-4">Urutan</th><th className="w-[12%] px-5 py-4">Status</th><th className="w-[14%] px-5 py-4 text-right">Aksi</th></tr></thead>
-                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4">{tutorial.category?.name ?? "Tanpa kategori"}</td><td className="px-5 py-4">{formatDuration(tutorial.durationSeconds)}</td><td className="px-5 py-4">{tutorial.sortOrder}</td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
+                    : <div className="overflow-x-auto"><table className="w-full min-w-[700px] table-fixed text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="w-[58%] px-5 py-4">Tutorial</th><th className="w-[12%] px-5 py-4">Urutan</th><th className="w-[15%] px-5 py-4">Status</th><th className="w-[15%] px-5 py-4 text-right">Aksi</th></tr></thead>
+                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4">{tutorial.sortOrder}</td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
             </div>
 
             {!loading && !error && meta && meta.totalPages > 1 && <div className="mt-6 flex items-center justify-between gap-4"><p className="text-sm text-slate-500">Halaman {meta.page} dari {meta.totalPages}</p><div className="flex gap-2"><button type="button" disabled={!meta.hasPreviousPage} onClick={() => setPage((value) => value - 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronLeft size={18} /></button><button type="button" disabled={!meta.hasNextPage} onClick={() => setPage((value) => value + 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronRight size={18} /></button></div></div>}

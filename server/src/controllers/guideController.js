@@ -7,10 +7,7 @@ import {
 
 import { db } from "../config/db.js";
 import { guideForResponse } from "../services/guideFiles.js";
-import {
-    categories,
-    guides,
-} from "../models/schema.js";
+import { guides } from "../models/schema.js";
 
 export async function getGuides(req, res) {
     try {
@@ -21,20 +18,7 @@ export async function getGuides(req, res) {
         }
 
         const offset = (page - 1) * limit;
-        const categorySlug =
-            String(req.query.category ?? "").trim();
-
-        const conditions = [
-            eq(guides.isPublished, true),
-        ];
-
-        if (categorySlug) {
-            conditions.push(
-                eq(categories.slug, categorySlug)
-            );
-        }
-
-        const whereCondition = and(...conditions);
+        const whereCondition = eq(guides.isPublished, true);
 
         const [data, totalResult] = await Promise.all([
             db
@@ -44,17 +28,8 @@ export async function getGuides(req, res) {
                     slug: guides.slug,
                     description: guides.description,
                     fileUrl: guides.fileUrl,
-                    category: {
-                        id: categories.id,
-                        name: categories.name,
-                        slug: categories.slug,
-                    },
                 })
                 .from(guides)
-                .leftJoin(
-                    categories,
-                    eq(guides.categoryId, categories.id)
-                )
                 .where(whereCondition)
                 .orderBy(
                     asc(guides.sortOrder),
@@ -68,10 +43,6 @@ export async function getGuides(req, res) {
                     total: count(),
                 })
                 .from(guides)
-                .leftJoin(
-                    categories,
-                    eq(guides.categoryId, categories.id)
-                )
                 .where(whereCondition),
         ]);
 
@@ -115,17 +86,8 @@ export async function getGuideBySlug(
                 slug: guides.slug,
                 description: guides.description,
                 fileUrl: guides.fileUrl,
-                category: {
-                    id: categories.id,
-                    name: categories.name,
-                    slug: categories.slug,
-                },
             })
             .from(guides)
-            .leftJoin(
-                categories,
-                eq(guides.categoryId, categories.id)
-            )
             .where(
                 and(
                     eq(guides.slug, slug),

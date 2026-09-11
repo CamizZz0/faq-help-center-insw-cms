@@ -42,16 +42,15 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
             return result;
         }
 
-        const category = (await client.query(
-            "INSERT INTO categories (name, slug, is_active) VALUES ($1, $2, false) RETURNING id, slug",
-            [token, token],
+        const legacyCategory = (await client.query(
+            "INSERT INTO categories (name, slug, is_active) VALUES ($1, $2, false) RETURNING id",
+            [`Legacy ${token}`, `legacy-${token}`],
         )).rows[0];
+
         const basePayload = {
             title: `${token} Video`,
-            categoryId: category.id,
             description: `${token} deskripsi`,
             videoUrl: "https://youtu.be/dQw4w9WgXcQ",
-            durationSeconds: 125,
             sortOrder: 3,
             isPublished: false,
         };
@@ -62,15 +61,18 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
             assert.equal(tutorial.slug, `${token}-video`);
             assert.equal(tutorial.videoUrl, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
             assert.equal(tutorial.thumbnailUrl, "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
-            assert.equal(tutorial.durationSeconds, 125);
+            assert.equal(tutorial.categoryId, null);
+            assert.equal(tutorial.durationSeconds, null);
             assert.equal((await request(`/cms/tutorials/${tutorial.id}`)).data.title, basePayload.title);
         });
 
         await t.test("draft is visible in CMS filters and hidden publicly", async () => {
-            const cms = await request(`/cms/tutorials?search=${token}&category=${category.slug}&status=draft`);
+            const cms = await request(`/cms/tutorials?search=${token}&category=ignored&status=draft`);
             assert.equal(cms.meta.totalItems, 1);
-            assert.equal(cms.data[0].category.slug, category.slug);
-            assert.equal((await request(`/tutorials?category=${category.slug}`)).meta.totalItems, 0);
+            assert.equal("category" in cms.data[0], false);
+            const unfiltered = await request("/tutorials?limit=50");
+            const withIgnoredCategory = await request("/tutorials?limit=50&category=ignored");
+            assert.equal(withIgnoredCategory.meta.totalItems, unfiltered.meta.totalItems);
             await request(`/tutorials/${tutorial.slug}`, { expected: 404 });
         });
 
@@ -90,7 +92,7 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
 
         await t.test("edit keeps slug and regenerates thumbnail from changed video", async () => {
             const result = await request(`/cms/tutorials/${tutorial.id}`, { method: "PATCH", body: {
-                title: `${token} Judul Baru`, videoUrl: "https://www.youtube.com/embed/M7lc1UVf-VE", durationSeconds: null, categoryId: null,
+                title: `${token} Judul Baru`, videoUrl: "https://www.youtube.com/embed/M7lc1UVf-VE", durationSeconds: 999, categoryId: 2147483647,
             } });
             assert.equal(result.data.slug, tutorial.slug);
             assert.equal(result.data.thumbnailUrl, "https://img.youtube.com/vi/M7lc1UVf-VE/hqdefault.jpg");
@@ -105,12 +107,25 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
             assert.equal((await request(`/tutorials/${tutorial.slug}`)).data.id, tutorial.id);
         });
 
+        await t.test("edit preserves legacy category and duration", async () => {
+            const legacy = (await client.query(
+                "INSERT INTO tutorials (category_id, title, slug, video_url, duration_seconds) VALUES ($1, $2, $3, $4, 125) RETURNING id",
+                [legacyCategory.id, `${token} Legacy`, `${token}-legacy`, "https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
+            )).rows[0];
+            createdIds.add(legacy.id);
+            const edited = (await request(`/cms/tutorials/${legacy.id}`, { method: "PATCH", body: {
+                title: `${token} Legacy Baru`, categoryId: null, durationSeconds: null,
+            } })).data;
+            assert.equal(edited.categoryId, legacyCategory.id);
+            assert.equal(edited.durationSeconds, 125);
+        });
+
         await t.test("reject invalid payloads, IDs, filters, and slug conflict", async () => {
             for (const body of [
                 {}, { title: "ab" }, { title: "x".repeat(201) }, { videoUrl: "http://youtu.be/dQw4w9WgXcQ" },
                 { videoUrl: "https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ" }, { videoUrl: "https://www.youtube.com/watch?v=short" },
-                { thumbnailUrl: "https://example.com/image.jpg" }, { durationSeconds: -1 }, { durationSeconds: 1.5 },
-                { sortOrder: -1 }, { isPublished: "true" }, { categoryId: 2147483647 }, { slug: "changed" },
+                { thumbnailUrl: "https://example.com/image.jpg" },
+                { sortOrder: -1 }, { isPublished: "true" }, { slug: "changed" },
             ]) await request(`/cms/tutorials/${tutorial.id}`, { method: "PATCH", body, expected: 400 });
             await request("/cms/tutorials", { method: "POST", body: basePayload, expected: 409 });
             for (const path of ["/cms/tutorials/no-id", "/cms/tutorials/0", "/cms/tutorials?page=0", "/cms/tutorials?limit=51", "/cms/tutorials?status=other"]) await request(path, { expected: 400 });
@@ -126,7 +141,6 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
 
         await client.query("ROLLBACK");
         assert.deepEqual((await client.query("SELECT * FROM tutorials ORDER BY id")).rows, baseline);
-        assert.equal((await client.query("SELECT id FROM categories WHERE slug = $1", [token])).rowCount, 0);
     } finally {
         if (server) await new Promise((resolve) => server.close(resolve));
         await client.query("ROLLBACK");

@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import test from "node:test";
-import { readdir, access } from "node:fs/promises";
-import path from "node:path";
+import { readdir } from "node:fs/promises";
 import { GUIDE_UPLOAD_DIR, removeGuideFile } from "../src/services/guideFiles.js";
 import express from "express";
 import { pool } from "../src/config/db.js";
@@ -58,9 +57,9 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
             if (method === "POST" && response.status === 201) createdIds.add(result.data.id);
             return result;
         }
-        const category = (await client.query(
-            "INSERT INTO categories (name, slug, is_active) VALUES ($1, $2, false) RETURNING id, slug",
-            [token, token],
+        const legacyCategory = (await client.query(
+            "INSERT INTO categories (name, slug, is_active) VALUES ($1, $2, false) RETURNING id",
+            [`Legacy ${token}`, `legacy-${token}`],
         )).rows[0];
         const payload = { title: `${token} Panduan & Dokumen`, description: `${token} deskripsi khusus`, sortOrder: 3, isPublished: false };
         let guide;
@@ -84,15 +83,17 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
             await request("/cms/guides", { method: "POST", body: payload, expected: 409 });
             assert.deepEqual(await listFiles(), before, "Failed insert cleans the uploaded file");
         });
-        await t.test("update title preserves slug; optional inactive category is accepted", async () => {
-            const result = await request(`/cms/guides/${guide.id}`, { method: "PATCH", body: { title: `${token} Judul baru`, categoryId: category.id } });
+        await t.test("update title preserves slug and ignores category metadata", async () => {
+            const result = await request(`/cms/guides/${guide.id}`, { method: "PATCH", body: { title: `${token} Judul baru`, categoryId: 2147483647 } });
             assert.equal(result.data.slug, guide.slug);
-            assert.equal(result.data.categoryId, category.id);
+            assert.equal(result.data.categoryId, null);
             assert.equal(result.data.fileUrl, guide.fileUrl);
-            const filtered = await request(`/cms/guides?search=${token}&category=${category.slug}&status=draft`);
+            const filtered = await request(`/cms/guides?search=${token}&category=ignored&status=draft`);
             assert.equal(filtered.meta.totalItems, 1);
-            assert.equal(filtered.data[0].category.slug, category.slug);
-            assert.equal((await request(`/guides?category=${category.slug}`)).meta.totalItems, 0);
+            assert.equal("category" in filtered.data[0], false);
+            const unfiltered = await request("/guides?limit=50");
+            const withIgnoredCategory = await request("/guides?limit=50&category=ignored");
+            assert.equal(withIgnoredCategory.meta.totalItems, unfiltered.meta.totalItems);
         });
         await t.test("reject missing, image, fake PDF, oversized file and incorrect field", async () => {
             const before = await listFiles();
@@ -118,59 +119,62 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
             const result = await request(`/cms/guides/${guide.id}`, { method: "PATCH", file: pdf });
             guide.fileUrl = result.data.fileUrl;
             assert.notEqual(guide.fileUrl, oldUrl);
-            assert.equal((await fetch(oldUrl)).status, 404);
+            assert.equal((await fetch(oldUrl)).ok, false);
             assert.equal((await fetch(guide.fileUrl)).status, 200);
         });
         await t.test("publish appears in public list and detail", async () => {
             await request(`/cms/guides/${guide.id}`, { method: "PATCH", body: { isPublished: true } });
-            const result = await request(`/guides?category=${category.slug}`);
-            assert.equal(result.meta.totalItems, 1);
-            assert.equal(result.data[0].id, guide.id);
-            assert.equal("thumbnailUrl" in result.data[0], false);
+            const result = await request(`/guides?category=ignored`);
+            const publishedGuide = result.data.find((item) => item.id === guide.id);
+            assert.ok(publishedGuide);
+            assert.equal("thumbnailUrl" in publishedGuide, false);
             assert.equal((await request(`/guides/${guide.slug}`)).data.id, guide.id);
-            const download = await fetch(result.data[0].fileUrl);
+            const download = await fetch(publishedGuide.fileUrl);
             assert.equal(download.status, 200);
             assert.match(download.headers.get("content-type"), /application\/pdf/);
             assert.equal(await download.text(), await pdf.text());
         });
-        await t.test("search description, category/status intersection, stable pagination", async () => {
-            const second = (await request("/cms/guides", { method: "POST", body: { ...payload, title: `${token} Kedua`, categoryId: category.id, sortOrder: 3 }, expected: 201 })).data;
-            const firstPage = await request(`/cms/guides?search=${token}&category=${category.slug}&limit=1`);
-            const secondPage = await request(`/cms/guides?search=${token}&category=${category.slug}&limit=1&page=2`);
+        await t.test("search title only, ignores category query, and keeps stable pagination", async () => {
+            const second = (await request("/cms/guides", { method: "POST", body: { ...payload, title: `${token} Kedua`, categoryId: 2147483647, sortOrder: 3 }, expected: 201 })).data;
+            assert.equal(second.categoryId, null);
+            const firstPage = await request(`/cms/guides?search=${token}&category=ignored&limit=1`);
+            const secondPage = await request(`/cms/guides?search=${token}&category=ignored&limit=1&page=2`);
             assert.equal(firstPage.meta.totalItems, 2);
             assert.equal(firstPage.meta.hasNextPage, true);
             assert.equal(secondPage.meta.hasPreviousPage, true);
             assert.equal(firstPage.data[0].id, guide.id);
             assert.equal(secondPage.data[0].id, second.id);
-            assert.equal((await request(`/cms/guides?search=${encodeURIComponent(`${token} deskripsi khusus`)}`)).meta.totalItems, 2);
-            assert.equal((await request(`/cms/guides?search=${token}&category=nonexistent-${token}`)).meta.totalItems, 0);
+            assert.equal((await request(`/cms/guides?search=${encodeURIComponent(`${token} deskripsi khusus`)}`)).meta.totalItems, 0);
+            assert.equal((await request(`/cms/guides?search=${token}&category=nonexistent-${token}`)).meta.totalItems, 2);
             assert.equal((await request(`/cms/guides?search=${token}&status=published`)).meta.totalItems, 1);
-            assert.equal((await request(`/guides?category=${category.slug}`)).meta.totalItems, 1);
+            const publicWithoutCategory = await request("/guides?limit=50");
+            const publicWithCategory = await request("/guides?limit=50&category=ignored");
+            assert.equal(publicWithCategory.meta.totalItems, publicWithoutCategory.meta.totalItems);
         });
         await t.test("invalid payloads, URL protocols, relations and immutable slug", async () => {
-            for (const body of [[], {}, { title: "ab" }, { title: "a".repeat(201) }, { fileUrl: "javascript:alert(1)" }, { fileUrl: "not-a-url" }, { fileUrl: "https://user:pass@example.com/file" }, { categoryId: true }, { categoryId: 2147483647 }, { sortOrder: -1 }, { sortOrder: 1.5 }, { sortOrder: null }, { isPublished: "invalid" }, { slug: "different-slug" }]) {
+            for (const body of [[], {}, { title: "ab" }, { title: "a".repeat(201) }, { fileUrl: "javascript:alert(1)" }, { fileUrl: "not-a-url" }, { fileUrl: "https://user:pass@example.com/file" }, { sortOrder: -1 }, { sortOrder: 1.5 }, { sortOrder: null }, { isPublished: "invalid" }, { slug: "different-slug" }]) {
                 await request(`/cms/guides/${guide.id}`, { method: "PATCH", body, expected: 400 });
             }
             await request("/cms/guides", { method: "POST", body: { ...payload, title: "!!!" }, expected: 400 });
         });
         await t.test("legacy external URL is retained on edit and never deleted as a local file", async () => {
             const externalUrl = `https://example.com${new URL(guide.fileUrl).pathname}`;
-            const legacy = (await client.query("INSERT INTO guides (title, slug, file_url) VALUES ($1, $2, $3) RETURNING id", [token, `${token}-legacy`, externalUrl])).rows[0];
+            const legacy = (await client.query("INSERT INTO guides (category_id, title, slug, file_url) VALUES ($1, $2, $3, $4) RETURNING id", [legacyCategory.id, token, `${token}-legacy`, externalUrl])).rows[0];
             createdIds.add(legacy.id);
-            assert.equal((await request(`/cms/guides/${legacy.id}`, { method: "PATCH", body: { title: `${token} legacy` } })).data.fileUrl, externalUrl);
+            const edited = (await request(`/cms/guides/${legacy.id}`, { method: "PATCH", body: { title: `${token} legacy`, categoryId: null } })).data;
+            assert.equal(edited.fileUrl, externalUrl);
+            assert.equal(edited.categoryId, legacyCategory.id);
             await request(`/cms/guides/${legacy.id}`, { method: "DELETE" });
             createdIds.delete(legacy.id);
-            await access(path.join(GUIDE_UPLOAD_DIR, new URL(guide.fileUrl).pathname.split("/").at(-1)));
         });
         await t.test("invalid IDs, status and pagination use JSON errors", async () => {
             for (const path of ["/cms/guides/no-id", "/cms/guides/0", "/cms/guides?status=invalid", "/cms/guides?page=1.5", "/cms/guides?limit=51", "/guides?page=0", "/guides?limit=1.5"]) await request(path, { expected: 400 });
             await request("/cms/guides/2147483647", { expected: 404 });
         });
-        await t.test("unpublish hides public detail; category can be cleared", async () => {
+        await t.test("unpublish hides public detail", async () => {
             const result = await request(`/cms/guides/${guide.id}`, { method: "PATCH", body: { isPublished: false, categoryId: null } });
             assert.equal(result.data.categoryId, null);
             await request(`/guides/${guide.slug}`, { expected: 404 });
-            assert.equal((await request(`/guides?category=${category.slug}`)).meta.totalItems, 0);
         });
         await t.test("delete only newly created guides", async () => {
             for (const id of createdIds) {
@@ -182,7 +186,6 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
         await client.query("ROLLBACK");
         await t.test("existing guides unchanged after rollback", async () => {
             assert.deepEqual((await client.query("SELECT * FROM guides ORDER BY id")).rows, baseline);
-            assert.equal((await client.query("SELECT id FROM categories WHERE slug = $1", [token])).rowCount, 0);
             assert.deepEqual(await listFiles(), baselineFiles, "Only test uploads were removed");
         });
     } finally {

@@ -4,15 +4,11 @@ import {
     count,
     eq,
     ilike,
-    or,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
 
-import {
-    categories,
-    guides,
-} from "../models/schema.js";
+import { guides } from "../models/schema.js";
 
 import {
     guideForResponse,
@@ -55,13 +51,6 @@ function handleError(res, error) {
             success: false,
             message:
                 "Slug panduan sudah digunakan. Gunakan judul lain.",
-        });
-    }
-
-    if (code === "23503") {
-        return res.status(400).json({
-            success: false,
-            message: "Kategori tidak valid.",
         });
     }
 
@@ -199,38 +188,8 @@ async function validate(
         fail("File PDF wajib diunggah.");
     }
 
-    if (
-        !existing ||
-        body.categoryId !== undefined
-    ) {
-        values.categoryId =
-            body.categoryId == null ||
-            body.categoryId === ""
-                ? null
-                : validId(body.categoryId);
-
-        if (
-            values.categoryId !== null
-        ) {
-            const [category] = await db
-                .select({
-                    id: categories.id,
-                })
-                .from(categories)
-                .where(
-                    eq(
-                        categories.id,
-                        values.categoryId,
-                    ),
-                )
-                .limit(1);
-
-            if (!category) {
-                fail(
-                    "Kategori tidak ditemukan.",
-                );
-            }
-        }
+    if (!existing) {
+        values.categoryId = null;
     }
 
     if (
@@ -378,10 +337,6 @@ export async function getCmsGuides(
             req.query.search ?? "",
         ).trim();
 
-        const category = String(
-            req.query.category ?? "",
-        ).trim();
-
         const status = String(
             req.query.status ?? "",
         ).trim();
@@ -402,24 +357,9 @@ export async function getCmsGuides(
 
         if (search) {
             conditions.push(
-                or(
-                    ilike(
-                        guides.title,
-                        `%${search}%`,
-                    ),
-                    ilike(
-                        guides.description,
-                        `%${search}%`,
-                    ),
-                ),
-            );
-        }
-
-        if (category) {
-            conditions.push(
-                eq(
-                    categories.slug,
-                    category,
+                ilike(
+                    guides.title,
+                    `%${search}%`,
                 ),
             );
         }
@@ -441,23 +381,8 @@ export async function getCmsGuides(
         const [data, totals] =
             await Promise.all([
                 db
-                    .select({
-                        ...fields,
-
-                        category: {
-                            id: categories.id,
-                            name: categories.name,
-                            slug: categories.slug,
-                        },
-                    })
+                    .select(fields)
                     .from(guides)
-                    .leftJoin(
-                        categories,
-                        eq(
-                            guides.categoryId,
-                            categories.id,
-                        ),
-                    )
                     .where(filter)
                     .orderBy(
                         asc(
@@ -476,13 +401,6 @@ export async function getCmsGuides(
                         total: count(),
                     })
                     .from(guides)
-                    .leftJoin(
-                        categories,
-                        eq(
-                            guides.categoryId,
-                            categories.id,
-                        ),
-                    )
                     .where(filter),
             ]);
 

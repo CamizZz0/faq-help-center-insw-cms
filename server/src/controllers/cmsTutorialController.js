@@ -1,6 +1,6 @@
-import { and, asc, count, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, eq, ilike } from "drizzle-orm";
 import { db } from "../config/db.js";
-import { categories, tutorials } from "../models/schema.js";
+import { tutorials } from "../models/schema.js";
 
 const fields = {
     id: tutorials.id,
@@ -25,7 +25,6 @@ function fail(message, status = 400) {
 function handleError(res, error) {
     const code = error?.cause?.code ?? error?.code;
     if (code === "23505") return res.status(409).json({ success: false, message: "Slug tutorial sudah digunakan. Gunakan judul lain." });
-    if (code === "23503") return res.status(400).json({ success: false, message: "Kategori tidak valid." });
     if (!error.status) console.error("Kesalahan tutorial CMS:", error);
     return res.status(error.status ?? 500).json({
         success: false,
@@ -77,25 +76,14 @@ async function validate(body, existing) {
         if (body.slug !== undefined && body.slug !== values.slug) fail("Slug harus sesuai dengan judul saat menambah tutorial.");
     } else if (body.slug !== undefined && body.slug !== existing.slug) fail("Slug tutorial tidak dapat diubah setelah dibuat.");
 
-    if (!existing || body.categoryId !== undefined) {
-        values.categoryId = body.categoryId == null || body.categoryId === "" ? null : validId(body.categoryId);
-        if (values.categoryId !== null) {
-            const [category] = await db.select({ id: categories.id }).from(categories).where(eq(categories.id, values.categoryId)).limit(1);
-            if (!category) fail("Kategori tidak ditemukan.");
-        }
-    }
+    if (!existing) values.categoryId = null;
     if (!existing || body.description !== undefined) {
         if (body.description != null && typeof body.description !== "string") fail("Deskripsi harus berupa teks.");
         values.description = body.description?.trim() || null;
     }
     if (!existing || body.videoUrl !== undefined) Object.assign(values, parseYouTubeUrl(body.videoUrl));
     if (body.thumbnailUrl !== undefined) fail("Thumbnail tutorial dibuat otomatis dari URL YouTube.");
-    if (!existing || body.durationSeconds !== undefined) {
-        const duration = body.durationSeconds;
-        if (duration == null || duration === "") values.durationSeconds = null;
-        else if (!["number", "string"].includes(typeof duration) || !Number.isInteger(Number(duration)) || Number(duration) < 0 || Number(duration) > 2147483647) fail("Durasi harus berupa bilangan bulat minimal 0.");
-        else values.durationSeconds = Number(duration);
-    }
+    if (!existing) values.durationSeconds = null;
     if (!existing || body.sortOrder !== undefined) {
         const order = body.sortOrder == null || body.sortOrder === "" ? 0 : body.sortOrder;
         if (!["number", "string"].includes(typeof order) || !Number.isInteger(Number(order)) || Number(order) < 0 || Number(order) > 2147483647) fail("Urutan harus berupa bilangan bulat minimal 0.");
@@ -116,19 +104,16 @@ export async function getCmsTutorials(req, res) {
         const limit = Number(req.query.limit ?? 10);
         if (!Number.isSafeInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 50 || !Number.isSafeInteger((page - 1) * limit)) fail("Parameter pagination tidak valid.");
         const search = String(req.query.search ?? "").trim();
-        const category = String(req.query.category ?? "").trim();
         const status = String(req.query.status ?? "").trim();
         if (status && !["published", "draft"].includes(status)) fail("Status harus bernilai published atau draft.");
         const conditions = [];
-        if (search) conditions.push(or(ilike(tutorials.title, `%${search}%`), ilike(tutorials.description, `%${search}%`), ilike(tutorials.videoUrl, `%${search}%`)));
-        if (category) conditions.push(eq(categories.slug, category));
+        if (search) conditions.push(ilike(tutorials.title, `%${search}%`));
         if (status) conditions.push(eq(tutorials.isPublished, status === "published"));
         const filter = conditions.length ? and(...conditions) : undefined;
         const [data, totals] = await Promise.all([
-            db.select({ ...fields, category: { id: categories.id, name: categories.name, slug: categories.slug } })
-                .from(tutorials).leftJoin(categories, eq(tutorials.categoryId, categories.id)).where(filter)
+            db.select(fields).from(tutorials).where(filter)
                 .orderBy(asc(tutorials.sortOrder), asc(tutorials.id)).limit(limit).offset((page - 1) * limit),
-            db.select({ total: count() }).from(tutorials).leftJoin(categories, eq(tutorials.categoryId, categories.id)).where(filter),
+            db.select({ total: count() }).from(tutorials).where(filter),
         ]);
         const totalItems = Number(totals[0]?.total ?? 0);
         const totalPages = Math.ceil(totalItems / limit);

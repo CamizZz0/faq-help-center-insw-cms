@@ -6,10 +6,7 @@ import {
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
-import {
-    categories,
-    tutorials,
-} from "../models/schema.js";
+import { tutorials } from "../models/schema.js";
 
 export async function getTutorials(
     req,
@@ -28,20 +25,7 @@ export async function getTutorials(
         );
 
         const offset = (page - 1) * limit;
-        const categorySlug =
-            req.query.category?.trim();
-
-        const conditions = [
-            eq(tutorials.isPublished, true),
-        ];
-
-        if (categorySlug) {
-            conditions.push(
-                eq(categories.slug, categorySlug)
-            );
-        }
-
-        const whereCondition = and(...conditions);
+        const whereCondition = eq(tutorials.isPublished, true);
 
         const [data, totalResult] =
             await Promise.all([
@@ -55,22 +39,8 @@ export async function getTutorials(
                         videoUrl: tutorials.videoUrl,
                         thumbnailUrl:
                             tutorials.thumbnailUrl,
-                        durationSeconds:
-                            tutorials.durationSeconds,
-                        category: {
-                            id: categories.id,
-                            name: categories.name,
-                            slug: categories.slug,
-                        },
                     })
                     .from(tutorials)
-                    .leftJoin(
-                        categories,
-                        eq(
-                            tutorials.categoryId,
-                            categories.id
-                        )
-                    )
                     .where(whereCondition)
                     .orderBy(
                         asc(tutorials.sortOrder),
@@ -84,13 +54,6 @@ export async function getTutorials(
                         total: count(),
                     })
                     .from(tutorials)
-                    .leftJoin(
-                        categories,
-                        eq(
-                            tutorials.categoryId,
-                            categories.id
-                        )
-                    )
                     .where(whereCondition),
             ]);
 
@@ -136,22 +99,8 @@ export async function getTutorialBySlug(
                 videoUrl: tutorials.videoUrl,
                 thumbnailUrl:
                     tutorials.thumbnailUrl,
-                durationSeconds:
-                    tutorials.durationSeconds,
-                category: {
-                    id: categories.id,
-                    name: categories.name,
-                    slug: categories.slug,
-                },
             })
             .from(tutorials)
-            .leftJoin(
-                categories,
-                eq(
-                    tutorials.categoryId,
-                    categories.id
-                )
-            )
             .where(
                 and(
                     eq(tutorials.slug, slug),

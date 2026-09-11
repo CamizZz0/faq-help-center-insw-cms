@@ -3,7 +3,6 @@ import {
     asc,
     eq,
     ilike,
-    or,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
@@ -21,25 +20,17 @@ import {
     guideForResponse,
 } from "../services/guideFiles.js";
 
-function validationError(
-    res,
-    message,
-) {
+function validationError(res, message) {
     return res.status(400).json({
         success: false,
         message,
     });
 }
 
-export async function searchHelpCenter(
-    req,
-    res,
-) {
+export async function searchHelpCenter(req, res) {
     const rawQuery = req.query.q;
 
-    if (
-        typeof rawQuery !== "string"
-    ) {
+    if (typeof rawQuery !== "string") {
         return validationError(
             res,
             "Parameter q wajib berupa string.",
@@ -66,9 +57,7 @@ export async function searchHelpCenter(
 
     if (
         typeof rawPage !== "string" ||
-        !/^\d+$/.test(
-            rawPage.trim(),
-        )
+        !/^\d+$/.test(rawPage.trim())
     ) {
         return validationError(
             res,
@@ -78,9 +67,7 @@ export async function searchHelpCenter(
 
     if (
         typeof rawLimit !== "string" ||
-        !/^\d+$/.test(
-            rawLimit.trim(),
-        )
+        !/^\d+$/.test(rawLimit.trim())
     ) {
         return validationError(
             res,
@@ -115,96 +102,51 @@ export async function searchHelpCenter(
     const offset =
         (page - 1) * limit;
 
-    if (
-        !Number.isSafeInteger(offset)
-    ) {
+    if (!Number.isSafeInteger(offset)) {
         return validationError(
             res,
             "Parameter pagination tidak valid.",
         );
     }
 
-    const escapedQuery =
-        query.replace(
-            /[\\%_]/g,
-            "\\$&",
-        );
+    /*
+     * Mencegah karakter %, _, dan backslash
+     * dianggap sebagai wildcard pencarian SQL.
+     */
+    const escapedQuery = query.replace(
+        /[\\%_]/g,
+        "\\$&",
+    );
 
     const pattern =
         `%${escapedQuery}%`;
 
+    /*
+     * Pencarian FAQ hanya berdasarkan judul
+     * pertanyaan, yaitu faqs.question.
+     */
     const faqFilter = and(
         eq(faqs.isPublished, true),
         eq(faqTopics.isActive, true),
-        eq(
-            subcategories.isActive,
-            true,
-        ),
+        eq(subcategories.isActive, true),
         eq(categories.isActive, true),
-
-        or(
-            ilike(
-                faqs.question,
-                pattern,
-            ),
-            ilike(
-                faqs.answer,
-                pattern,
-            ),
-            ilike(
-                faqTopics.name,
-                pattern,
-            ),
-            ilike(
-                subcategories.name,
-                pattern,
-            ),
-            ilike(
-                categories.name,
-                pattern,
-            ),
-        ),
+        ilike(faqs.question, pattern),
     );
 
+    /*
+     * Pencarian Panduan hanya berdasarkan title.
+     */
     const guideFilter = and(
         eq(guides.isPublished, true),
-
-        or(
-            ilike(
-                guides.title,
-                pattern,
-            ),
-            ilike(
-                guides.description,
-                pattern,
-            ),
-            ilike(
-                categories.name,
-                pattern,
-            ),
-        ),
+        ilike(guides.title, pattern),
     );
 
+    /*
+     * Pencarian Tutorial hanya berdasarkan title.
+     */
     const tutorialFilter = and(
-        eq(
-            tutorials.isPublished,
-            true,
-        ),
-
-        or(
-            ilike(
-                tutorials.title,
-                pattern,
-            ),
-            ilike(
-                tutorials.description,
-                pattern,
-            ),
-            ilike(
-                categories.name,
-                pattern,
-            ),
-        ),
+        eq(tutorials.isPublished, true),
+        ilike(tutorials.title, pattern),
     );
 
     try {
@@ -216,8 +158,7 @@ export async function searchHelpCenter(
             db
                 .select({
                     id: faqs.id,
-                    question:
-                        faqs.question,
+                    question: faqs.question,
                     answer: faqs.answer,
                     isPopular:
                         faqs.isPopular,
@@ -276,9 +217,7 @@ export async function searchHelpCenter(
                     asc(
                         faqTopics.sortOrder,
                     ),
-                    asc(
-                        faqs.sortOrder,
-                    ),
+                    asc(faqs.sortOrder),
                     asc(faqs.id),
                 ),
 
@@ -291,27 +230,11 @@ export async function searchHelpCenter(
                         guides.description,
                     fileUrl:
                         guides.fileUrl,
-
-                    category: {
-                        name:
-                            categories.name,
-                        slug:
-                            categories.slug,
-                    },
                 })
                 .from(guides)
-                .leftJoin(
-                    categories,
-                    eq(
-                        guides.categoryId,
-                        categories.id,
-                    ),
-                )
                 .where(guideFilter)
                 .orderBy(
-                    asc(
-                        guides.sortOrder,
-                    ),
+                    asc(guides.sortOrder),
                     asc(guides.id),
                 ),
 
@@ -328,60 +251,43 @@ export async function searchHelpCenter(
                         tutorials.videoUrl,
                     thumbnailUrl:
                         tutorials.thumbnailUrl,
-                    durationSeconds:
-                        tutorials.durationSeconds,
-
-                    category: {
-                        name:
-                            categories.name,
-                        slug:
-                            categories.slug,
-                    },
                 })
                 .from(tutorials)
-                .leftJoin(
-                    categories,
-                    eq(
-                        tutorials.categoryId,
-                        categories.id,
-                    ),
-                )
-                .where(
-                    tutorialFilter,
-                )
+                .where(tutorialFilter)
                 .orderBy(
                     asc(
                         tutorials.sortOrder,
                     ),
-                    asc(
-                        tutorials.id,
-                    ),
+                    asc(tutorials.id),
                 ),
         ]);
 
+        /*
+         * Mengubah URL panduan lokal atau Supabase
+         * menjadi URL yang siap digunakan frontend.
+         */
         const normalizedGuides =
-            guideData.map(
-                (guide) =>
-                    guideForResponse(
-                        guide,
-                        req,
-                    ),
+            guideData.map((guide) =>
+                guideForResponse(
+                    guide,
+                    req,
+                ),
             );
 
+        /*
+         * Menggabungkan FAQ, Panduan, dan Tutorial
+         * ke dalam satu daftar hasil pencarian.
+         */
         const allResults = [
-            ...faqData.map(
-                (item) => ({
-                    ...item,
-                    resultType:
-                        "faq",
-                }),
-            ),
+            ...faqData.map((item) => ({
+                ...item,
+                resultType: "faq",
+            })),
 
             ...normalizedGuides.map(
                 (item) => ({
                     ...item,
-                    resultType:
-                        "guide",
+                    resultType: "guide",
                 }),
             ),
 
@@ -410,13 +316,17 @@ export async function searchHelpCenter(
                 totalItems / limit,
             );
 
+        /*
+         * Pagination diterapkan setelah seluruh
+         * jenis konten digabungkan.
+         */
         const pageResults =
             allResults.slice(
                 offset,
                 offset + limit,
             );
 
-        return res.json({
+        return res.status(200).json({
             success: true,
             message:
                 "Hasil pencarian berhasil diambil",
@@ -432,10 +342,13 @@ export async function searchHelpCenter(
                 limit,
                 totalItems,
                 totalPages,
+
                 hasNextPage:
                     page < totalPages,
+
                 hasPreviousPage:
                     page > 1,
+
                 counts,
             },
         });

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, FileText, Save, Upload, X } from "lucide-react";
-import { createCmsGuide, getCmsCategories, getCmsGuideById, updateCmsGuide } from "../../services/api";
+import { createCmsGuide, getCmsGuideById, updateCmsGuide } from "../../services/api";
 
 const inputClass = "w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100";
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -17,8 +17,7 @@ export default function GuideFormPage() {
 
 function GuideForm({ guideId }) {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ categoryId: "", title: "", slug: "", description: "", fileUrl: "", sortOrder: 0, isPublished: false });
-    const [categories, setCategories] = useState([]);
+    const [form, setForm] = useState({ title: "", slug: "", description: "", fileUrl: "", sortOrder: 0, isPublished: false });
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
     const [error, setError] = useState("");
@@ -34,14 +33,11 @@ function GuideForm({ guideId }) {
         let active = true;
         async function load() {
             try {
-                const [categoryResult, guideResult] = await Promise.all([
-                    getCmsCategories(), guideId ? getCmsGuideById(guideId) : Promise.resolve(null),
-                ]);
+                const guideResult = guideId ? await getCmsGuideById(guideId) : null;
                 if (!active) return;
-                setCategories(categoryResult.data);
                 if (guideResult) {
                     const guide = guideResult.data;
-                    setForm({ categoryId: guide.categoryId ?? "", title: guide.title, slug: guide.slug,
+                    setForm({ title: guide.title, slug: guide.slug,
                         description: guide.description ?? "", fileUrl: guide.fileUrl,
                         sortOrder: guide.sortOrder, isPublished: guide.isPublished });
                 }
@@ -94,7 +90,6 @@ function GuideForm({ guideId }) {
             return;
         }
         const payload = new FormData();
-        payload.append("categoryId", String(form.categoryId));
         payload.append("title", form.title.trim());
         payload.append("description", form.description);
         payload.append("sortOrder", String(form.sortOrder));
@@ -131,17 +126,6 @@ function GuideForm({ guideId }) {
             <form onSubmit={handleSubmit} className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
                 {error && <p role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</p>}
                 <fieldset disabled={saving} className="min-w-0 space-y-6">
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <Field label="Kategori (opsional)" htmlFor="guide-category">
-                            <select id="guide-category" value={form.categoryId} onChange={event => update("categoryId", event.target.value)} className={inputClass}>
-                                <option value="">Tanpa kategori</option>
-                                {categories.map(category => <option key={category.id} value={category.id}>{category.name}{!category.isActive ? " (nonaktif)" : ""}</option>)}
-                            </select>
-                        </Field>
-                        <Field label="Urutan" htmlFor="guide-order">
-                            <input id="guide-order" type="number" required min={0} max={2147483647} step={1} value={form.sortOrder} onChange={event => update("sortOrder", event.target.value)} className={inputClass} />
-                        </Field>
-                    </div>
                     <Field label="Judul *" htmlFor="guide-title">
                         <input id="guide-title" required minLength={3} maxLength={200} placeholder="Contoh: Panduan Pengajuan PIB" value={form.title} onChange={event => update("title", event.target.value)} className={inputClass} />
                     </Field>
@@ -178,10 +162,15 @@ function GuideForm({ guideId }) {
                         )}
                         {fileError && <p role="alert" className="mt-3 text-sm text-red-600">{fileError}</p>}
                     </div>
-                    <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-                        <input type="checkbox" checked={form.isPublished} onChange={event => update("isPublished", event.target.checked)} className="h-5 w-5" />
-                        <span><span className="block font-semibold text-slate-800">Terbitkan Panduan</span><span className="text-sm text-slate-500">Tampilkan panduan di website publik.</span></span>
-                    </label>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        <Field label="Urutan" htmlFor="guide-order">
+                            <input id="guide-order" type="number" required min={0} max={2147483647} step={1} value={form.sortOrder} onChange={event => update("sortOrder", event.target.value)} className={inputClass} />
+                        </Field>
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                            <input type="checkbox" checked={form.isPublished} onChange={event => update("isPublished", event.target.checked)} className="h-5 w-5" />
+                            <span><span className="block font-semibold text-slate-800">Terbitkan Panduan</span><span className="text-sm text-slate-500">Tampilkan panduan di website publik.</span></span>
+                        </label>
+                    </div>
                     <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
                         <button type="button" onClick={() => navigate("/guides")} className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 disabled:opacity-60">Batal</button>
                         <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={19} />{saving ? "Menyimpan..." : guideId ? "Simpan Perubahan" : "Simpan Panduan"}</button>
