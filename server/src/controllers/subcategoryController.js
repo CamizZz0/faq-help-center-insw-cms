@@ -16,6 +16,7 @@ export async function getTopicsBySubcategory(req, res) {
                 slug: subcategories.slug,
                 description: subcategories.description,
                 icon: subcategories.icon,
+                iconUrl: subcategories.iconUrl,
             })
             .from(subcategories)
             .where(

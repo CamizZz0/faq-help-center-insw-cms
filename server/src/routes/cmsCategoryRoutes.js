@@ -8,12 +8,14 @@ import {
     updateCmsCategory,
 } from "../controllers/cmsCategoryController.js";
 
+import { uploadHelpCenterIcon } from "../middleware/iconUpload.js";
+
 const router = Router();
 
 router.get("/", getCmsCategories);
 router.get("/:id", getCmsCategoryById);
-router.post("/", createCmsCategory);
-router.patch("/:id", updateCmsCategory);
+router.post("/", uploadHelpCenterIcon, createCmsCategory);
+router.patch("/:id", uploadHelpCenterIcon, updateCmsCategory);
 router.delete("/:id", deleteCmsCategory);
 
 export default router;

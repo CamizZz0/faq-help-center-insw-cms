@@ -6,15 +6,8 @@ import {
     updateCmsCategory,
 } from "../../services/api";
 
-const ICON_OPTIONS = [
-    { value: "package-import", label: "Paket Impor" },
-    { value: "package-export", label: "Paket Ekspor" },
-    { value: "user-round-plus", label: "Registrasi Akun" },
-    { value: "monitor-globe", label: "Portal" },
-    { value: "clipboard-check", label: "Perizinan" },
-    { value: "building", label: "Bangunan/Kawasan" },
-    { value: "layout-grid", label: "Layanan Lainnya" },
-];
+import IconDropzone from "./IconDropzone";
+import { validateIconFile } from "./iconFile";
 
 function createSlug(value = "") {
     return String(value)
@@ -32,7 +25,6 @@ function createInitialForm(category) {
         name: category?.name ?? "",
         slug: category?.slug ?? "",
         description: category?.description ?? "",
-        icon: category?.icon ?? "layout-grid",
         sortOrder: category?.sortOrder ?? 0,
         isActive: category?.isActive ?? true,
     };
@@ -56,6 +48,7 @@ export default function CategoryForm({
     );
 
     const [slugEdited, setSlugEdited] = useState(isEdit);
+    const [iconFile, setIconFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
@@ -121,15 +114,40 @@ export default function CategoryForm({
             return;
         }
 
-        const payload = {
-            name,
-            slug,
-            description:
-                form.description.trim(),
-            icon: form.icon,
-            sortOrder,
-            isActive: form.isActive,
-        };
+        /*
+         * Ikon wajib diunggah saat menambah kategori.
+         */
+        if (!isEdit && !iconFile) {
+            setError("Ikon kategori wajib diunggah.");
+            return;
+        }
+
+        if (iconFile) {
+            const iconError = validateIconFile(iconFile);
+
+            if (iconError) {
+                setError(iconError);
+                return;
+            }
+        }
+
+        const formData = new FormData();
+
+        formData.append("name", name);
+        formData.append("slug", slug);
+        formData.append(
+            "description",
+            form.description.trim()
+        );
+        formData.append("sortOrder", String(sortOrder));
+        formData.append(
+            "isActive",
+            String(form.isActive)
+        );
+
+        if (iconFile) {
+            formData.append("icon", iconFile);
+        }
 
         try {
             submitInProgress.current = true;
@@ -139,9 +157,9 @@ export default function CategoryForm({
             const result = isEdit
                 ? await updateCmsCategory(
                     category.id,
-                    payload
+                    formData
                 )
-                : await createCmsCategory(payload);
+                : await createCmsCategory(formData);
 
             onSaved(
                 result.data,
@@ -257,39 +275,34 @@ export default function CategoryForm({
                         />
                     </Field>
 
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                        <Field
-                            label="Ikon"
-                            htmlFor="category-icon"
-                        >
-                            <select
-                                id="category-icon"
-                                value={form.icon}
-                                onChange={(event) =>
-                                    updateField(
-                                        "icon",
-                                        event.target.value
-                                    )
-                                }
-                                className={inputClass}
-                            >
-                                {ICON_OPTIONS.map(
-                                    (icon) => (
-                                        <option
-                                            key={
-                                                icon.value
-                                            }
-                                            value={
-                                                icon.value
-                                            }
-                                        >
-                                            {icon.label}
-                                        </option>
-                                    )
-                                )}
-                            </select>
-                        </Field>
+                    <Field
+                        label={
+                            isEdit ? "Ikon" : "Ikon *"
+                        }
+                        htmlFor="category-icon"
+                    >
+                        <IconDropzone
+                            id="category-icon"
+                            file={iconFile}
+                            onChange={setIconFile}
+                            existingIconUrl={
+                                category?.iconUrl ?? ""
+                            }
+                            existingIconName={
+                                category?.icon ?? ""
+                            }
+                            disabled={submitting}
+                        />
 
+                        {isEdit && (
+                            <p className="mt-2 text-xs leading-5 text-slate-500">
+                                Biarkan kosong bila ikon lama
+                                tetap digunakan.
+                            </p>
+                        )}
+                    </Field>
+
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                         <Field
                             label="Urutan"
                             htmlFor="category-order"

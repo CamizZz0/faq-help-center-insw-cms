@@ -19,6 +19,10 @@ export const categories = pgTable("categories", {
 
     icon: varchar("icon", { length: 100 }),
 
+    iconUrl: text("icon_url"),
+
+    iconPath: text("icon_path"),
+
     sortOrder: integer("sort_order").notNull().default(0),
 
     isActive: boolean("is_active").notNull().default(true),
@@ -54,6 +58,10 @@ export const subcategories = pgTable("subcategories", {
     description: text("description"),
 
     icon: varchar("icon", { length: 100 }),
+
+    iconUrl: text("icon_url"),
+
+    iconPath: text("icon_path"),
 
     sortOrder: integer("sort_order").notNull().default(0),
 

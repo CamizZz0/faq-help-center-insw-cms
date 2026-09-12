@@ -18,6 +18,7 @@ import {
 } from "../../services/api";
 
 import DeleteSubcategoryModal from "../../components/cms/DeleteSubcategoryModal";
+import IconPreview from "../../components/cms/IconPreview";
 
 function extractCategories(result) {
     if (Array.isArray(result?.data)) {
@@ -341,9 +342,20 @@ export default function SubcategoryListPage() {
                                 className="rounded-2xl border border-slate-200 bg-white p-4"
                             >
                                 <div className="flex items-start justify-between gap-3">
-                                    <p className="min-w-0 break-words font-medium text-slate-900">
-                                        {item.name}
-                                    </p>
+                                    <div className="flex min-w-0 items-start gap-2">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-1 text-blue-600">
+                                            <IconPreview
+                                                iconUrl={item.iconUrl}
+                                                iconName={item.icon}
+                                                alt={`Ikon ${item.name}`}
+                                                className="h-full w-full"
+                                            />
+                                        </span>
+
+                                        <p className="min-w-0 break-words font-medium text-slate-900">
+                                            {item.name}
+                                        </p>
+                                    </div>
 
                                     <span
                                         className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
@@ -506,9 +518,20 @@ export default function SubcategoryListPage() {
                                         className="border-b border-slate-100 last:border-none hover:bg-slate-50"
                                     >
                                         <td className="max-w-md px-4 py-4">
-                                            <p className="font-medium text-slate-900">
-                                                {item.name}
-                                            </p>
+                                            <div className="flex items-start gap-3">
+                                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-1.5 text-blue-600">
+                                                    <IconPreview
+                                                        iconUrl={item.iconUrl}
+                                                        iconName={item.icon}
+                                                        alt={`Ikon ${item.name}`}
+                                                        className="h-full w-full"
+                                                    />
+                                                </span>
+
+                                                <p className="font-medium text-slate-900">
+                                                    {item.name}
+                                                </p>
+                                            </div>
                                             <p className="mt-1 line-clamp-2 text-sm text-slate-500">
                                                 {item.description ||
                                                     "Tidak ada deskripsi."}

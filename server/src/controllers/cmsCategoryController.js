@@ -11,6 +11,31 @@ import {
     subcategories,
 } from "../models/schema.js";
 
+import {
+    removeHelpCenterIcon,
+    uploadHelpCenterIcon,
+} from "../services/iconStorageService.js";
+
+const ICON_FOLDER = "categories";
+
+/*
+ * Daftar kolom respons CMS. Endpoint publik memiliki
+ * daftar sendiri karena iconPath tidak boleh dikirim keluar.
+ */
+const categoryFields = {
+    id: categories.id,
+    name: categories.name,
+    slug: categories.slug,
+    description: categories.description,
+    icon: categories.icon,
+    iconUrl: categories.iconUrl,
+    iconPath: categories.iconPath,
+    sortOrder: categories.sortOrder,
+    isActive: categories.isActive,
+    createdAt: categories.createdAt,
+    updatedAt: categories.updatedAt,
+};
+
 function createSlug(value = "") {
     return String(value)
         .normalize("NFD")
@@ -26,19 +51,61 @@ function getDatabaseErrorCode(error) {
     return error?.cause?.code ?? error?.code;
 }
 
+/*
+ * Body multipart selalu berupa teks, sehingga boolean
+ * perlu dinormalisasi dari "true"/"false".
+ */
+function parseBooleanField(value) {
+    if (value === undefined) return undefined;
+
+    if (typeof value === "boolean") return value;
+
+    if (value === "true") return true;
+
+    if (value === "false") return false;
+
+    return null;
+}
+
+/*
+ * Ikon hanya boleh berasal dari upload file, bukan URL
+ * yang dikirim melalui body.
+ */
+function rejectIconSourceFields(body) {
+    for (const field of ["iconUrl", "iconPath"]) {
+        if (body[field] !== undefined) {
+            return (
+                `Field ${field} tidak dapat diatur melalui body. ` +
+                "Unggah ikon melalui file."
+            );
+        }
+    }
+
+    return null;
+}
+
+/*
+ * Menghapus file ikon tanpa membuat request gagal saat
+ * storage bermasalah.
+ */
+async function cleanupIconSafely(iconPath) {
+    if (!iconPath) return;
+
+    try {
+        await removeHelpCenterIcon(iconPath);
+    } catch (error) {
+        console.error(
+            "Gagal membersihkan ikon kategori:",
+            error
+        );
+    }
+}
+
 export async function getCmsCategories(req, res) {
     try {
         const data = await db
             .select({
-                id: categories.id,
-                name: categories.name,
-                slug: categories.slug,
-                description: categories.description,
-                icon: categories.icon,
-                sortOrder: categories.sortOrder,
-                isActive: categories.isActive,
-                createdAt: categories.createdAt,
-                updatedAt: categories.updatedAt,
+                ...categoryFields,
                 subcategoryCount: count(subcategories.id),
             })
             .from(categories)
@@ -83,17 +150,7 @@ export async function getCmsCategoryById(req, res) {
         }
 
         const [category] = await db
-            .select({
-                id: categories.id,
-                name: categories.name,
-                slug: categories.slug,
-                description: categories.description,
-                icon: categories.icon,
-                sortOrder: categories.sortOrder,
-                isActive: categories.isActive,
-                createdAt: categories.createdAt,
-                updatedAt: categories.updatedAt,
-            })
+            .select(categoryFields)
             .from(categories)
             .where(eq(categories.id, id))
             .limit(1);
@@ -125,15 +182,28 @@ export async function getCmsCategoryById(req, res) {
 }
 
 export async function createCmsCategory(req, res) {
+    let uploadedIcon = null;
+
     try {
+        const body = req.body ?? {};
+
+        const iconSourceError =
+            rejectIconSourceFields(body);
+
+        if (iconSourceError) {
+            return res.status(400).json({
+                success: false,
+                message: iconSourceError,
+            });
+        }
+
         const {
             name,
             slug,
             description = "",
             icon = "",
             sortOrder = 0,
-            isActive = true,
-        } = req.body;
+        } = body;
 
         const cleanName = String(name ?? "").trim();
         const cleanSlug = createSlug(
@@ -141,6 +211,12 @@ export async function createCmsCategory(req, res) {
         );
 
         const parsedSortOrder = Number(sortOrder);
+
+        const isActive = parseBooleanField(
+            body.isActive === undefined
+                ? true
+                : body.isActive
+        );
 
         if (cleanName.length < 3) {
             return res.status(400).json({
@@ -168,11 +244,17 @@ export async function createCmsCategory(req, res) {
             });
         }
 
-        if (typeof isActive !== "boolean") {
+        if (isActive === null) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "isActive harus berupa boolean",
+                message: "isActive harus berupa boolean",
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Ikon kategori wajib diunggah.",
             });
         }
 
@@ -192,6 +274,11 @@ export async function createCmsCategory(req, res) {
             });
         }
 
+        uploadedIcon = await uploadHelpCenterIcon(
+            req.file,
+            ICON_FOLDER
+        );
+
         const [createdCategory] = await db
             .insert(categories)
             .values({
@@ -201,12 +288,13 @@ export async function createCmsCategory(req, res) {
                     String(description ?? "").trim() ||
                     null,
                 icon:
-                    String(icon ?? "").trim() ||
-                    null,
+                    String(icon ?? "").trim() || null,
+                iconUrl: uploadedIcon.fileUrl,
+                iconPath: uploadedIcon.filePath,
                 sortOrder: parsedSortOrder,
                 isActive,
             })
-            .returning();
+            .returning(categoryFields);
 
         return res.status(201).json({
             success: true,
@@ -218,6 +306,16 @@ export async function createCmsCategory(req, res) {
             "Gagal menambahkan kategori:",
             error
         );
+
+        /*
+         * Database gagal setelah ikon terunggah:
+         * hapus ikon baru agar tidak menjadi file yatim.
+         */
+        if (uploadedIcon?.filePath) {
+            await cleanupIconSafely(
+                uploadedIcon.filePath
+            );
+        }
 
         if (getDatabaseErrorCode(error) === "23505") {
             return res.status(409).json({
@@ -236,6 +334,9 @@ export async function createCmsCategory(req, res) {
 }
 
 export async function updateCmsCategory(req, res) {
+    let uploadedIcon = null;
+    let databaseUpdated = false;
+
     try {
         const id = Number(req.params.id);
 
@@ -247,7 +348,7 @@ export async function updateCmsCategory(req, res) {
         }
 
         const [existingCategory] = await db
-            .select()
+            .select(categoryFields)
             .from(categories)
             .where(eq(categories.id, id))
             .limit(1);
@@ -259,11 +360,23 @@ export async function updateCmsCategory(req, res) {
             });
         }
 
+        const body = req.body ?? {};
+
+        const iconSourceError =
+            rejectIconSourceFields(body);
+
+        if (iconSourceError) {
+            return res.status(400).json({
+                success: false,
+                message: iconSourceError,
+            });
+        }
+
         const updates = {};
 
-        if (req.body.name !== undefined) {
+        if (body.name !== undefined) {
             const name = String(
-                req.body.name ?? ""
+                body.name ?? ""
             ).trim();
 
             if (name.length < 3) {
@@ -277,14 +390,13 @@ export async function updateCmsCategory(req, res) {
             updates.name = name;
         }
 
-        if (req.body.slug !== undefined) {
-            const slug = createSlug(req.body.slug);
+        if (body.slug !== undefined) {
+            const slug = createSlug(body.slug);
 
             if (!slug) {
                 return res.status(400).json({
                     success: false,
-                    message:
-                        "Slug kategori tidak valid",
+                    message: "Slug kategori tidak valid",
                 });
             }
 
@@ -310,27 +422,27 @@ export async function updateCmsCategory(req, res) {
             updates.slug = slug;
         }
 
-        if (req.body.description !== undefined) {
+        if (body.description !== undefined) {
             updates.description =
                 String(
-                    req.body.description ?? ""
+                    body.description ?? ""
                 ).trim() || null;
         }
 
-        if (req.body.icon !== undefined) {
+        if (body.icon !== undefined) {
             updates.icon =
                 String(
-                    req.body.icon ?? ""
+                    body.icon ?? ""
                 ).trim() || null;
         }
 
-        if (req.body.sortOrder !== undefined) {
+        if (body.sortOrder !== undefined) {
             const sortOrder = Number(
-                req.body.sortOrder
+                body.sortOrder
             );
 
             if (
-                String(req.body.sortOrder).trim() === "" ||
+                String(body.sortOrder).trim() === "" ||
                 !Number.isInteger(sortOrder) ||
                 sortOrder < 0
             ) {
@@ -344,11 +456,11 @@ export async function updateCmsCategory(req, res) {
             updates.sortOrder = sortOrder;
         }
 
-        if (req.body.isActive !== undefined) {
-            if (
-                typeof req.body.isActive !==
-                "boolean"
-            ) {
+        if (body.isActive !== undefined) {
+            const isActive =
+                parseBooleanField(body.isActive);
+
+            if (isActive === null) {
                 return res.status(400).json({
                     success: false,
                     message:
@@ -356,7 +468,21 @@ export async function updateCmsCategory(req, res) {
                 });
             }
 
-            updates.isActive = req.body.isActive;
+            updates.isActive = isActive;
+        }
+
+        /*
+         * Ikon lama tetap dipakai bila tidak ada file baru.
+         */
+        if (req.file) {
+            uploadedIcon =
+                await uploadHelpCenterIcon(
+                    req.file,
+                    ICON_FOLDER
+                );
+
+            updates.iconUrl = uploadedIcon.fileUrl;
+            updates.iconPath = uploadedIcon.filePath;
         }
 
         if (Object.keys(updates).length === 0) {
@@ -373,7 +499,19 @@ export async function updateCmsCategory(req, res) {
             .update(categories)
             .set(updates)
             .where(eq(categories.id, id))
-            .returning();
+            .returning(categoryFields);
+
+        databaseUpdated = true;
+
+        /*
+         * Ikon lama baru dihapus setelah database berhasil
+         * diperbarui.
+         */
+        if (uploadedIcon) {
+            await cleanupIconSafely(
+                existingCategory.iconPath
+            );
+        }
 
         return res.status(200).json({
             success: true,
@@ -385,6 +523,19 @@ export async function updateCmsCategory(req, res) {
             "Gagal memperbarui kategori:",
             error
         );
+
+        /*
+         * Update database gagal: hapus ikon baru yang sudah
+         * terunggah agar tidak menjadi file yatim.
+         */
+        if (
+            uploadedIcon?.filePath &&
+            !databaseUpdated
+        ) {
+            await cleanupIconSafely(
+                uploadedIcon.filePath
+            );
+        }
 
         if (getDatabaseErrorCode(error) === "23505") {
             return res.status(409).json({
@@ -417,6 +568,7 @@ export async function deleteCmsCategory(req, res) {
             .select({
                 id: categories.id,
                 name: categories.name,
+                iconPath: categories.iconPath,
             })
             .from(categories)
             .where(eq(categories.id, id))
@@ -455,6 +607,12 @@ export async function deleteCmsCategory(req, res) {
                 id: categories.id,
                 name: categories.name,
             });
+
+        /*
+         * Data database sudah terhapus, ikon dibersihkan
+         * dari storage.
+         */
+        await cleanupIconSafely(category.iconPath);
 
         return res.status(200).json({
             success: true,

@@ -5,7 +5,15 @@ import { categories, subcategories } from "../models/schema.js";
 export async function getAllCategories(req, res) {
     try {
         const data = await db
-            .select()
+            .select({
+                id: categories.id,
+                name: categories.name,
+                slug: categories.slug,
+                description: categories.description,
+                icon: categories.icon,
+                iconUrl: categories.iconUrl,
+                sortOrder: categories.sortOrder,
+            })
             .from(categories)
             .where(eq(categories.isActive, true))
             .orderBy(asc(categories.sortOrder));
@@ -36,6 +44,7 @@ export async function getSubcategoriesByCategory(req, res) {
                 slug: categories.slug,
                 description: categories.description,
                 icon: categories.icon,
+                iconUrl: categories.iconUrl,
             })
             .from(categories)
             .where(
@@ -60,6 +69,7 @@ export async function getSubcategoriesByCategory(req, res) {
                 slug: subcategories.slug,
                 description: subcategories.description,
                 icon: subcategories.icon,
+                iconUrl: subcategories.iconUrl,
                 sortOrder: subcategories.sortOrder,
             })
             .from(subcategories)

@@ -124,9 +124,13 @@ export function getCmsCategoryById(id) {
 }
 
 export function createCmsCategory(payload) {
+    /*
+     * Body berupa FormData sehingga browser menetapkan
+     * header multipart beserta boundary sendiri.
+     */
     return request("/cms/categories", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: payload,
     });
 }
 
@@ -135,7 +139,7 @@ export function updateCmsCategory(id, payload) {
         `/cms/categories/${encodeURIComponent(id)}`,
         {
             method: "PATCH",
-            body: JSON.stringify(payload),
+            body: payload,
         }
     );
 }
@@ -162,9 +166,13 @@ export function getCmsSubcategoryById(id) {
 }
 
 export function createCmsSubcategory(payload) {
+    /*
+     * Body berupa FormData sehingga browser menetapkan
+     * header multipart beserta boundary sendiri.
+     */
     return request("/cms/subcategories", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: payload,
     });
 }
 
@@ -173,7 +181,7 @@ export function updateCmsSubcategory(id, payload) {
         `/cms/subcategories/${encodeURIComponent(id)}`,
         {
             method: "PATCH",
-            body: JSON.stringify(payload),
+            body: payload,
         }
     );
 }

@@ -15,6 +15,13 @@ import {
     subcategories,
 } from "../models/schema.js";
 
+import {
+    removeHelpCenterIcon,
+    uploadHelpCenterIcon,
+} from "../services/iconStorageService.js";
+
+const ICON_FOLDER = "subcategories";
+
 function createSlug(value = "") {
     return String(value)
         .normalize("NFD")
@@ -28,6 +35,52 @@ function createSlug(value = "") {
 
 function getDatabaseErrorCode(error) {
     return error?.cause?.code ?? error?.code;
+}
+
+/*
+ * Body multipart selalu berupa teks, sehingga boolean
+ * perlu dinormalisasi dari "true"/"false".
+ */
+function parseBooleanField(value) {
+    if (value === undefined) return undefined;
+
+    if (typeof value === "boolean") return value;
+
+    if (value === "true") return true;
+
+    if (value === "false") return false;
+
+    return null;
+}
+
+/*
+ * Ikon hanya boleh berasal dari upload file, bukan URL
+ * yang dikirim melalui body.
+ */
+function rejectIconSourceFields(body) {
+    for (const field of ["iconUrl", "iconPath"]) {
+        if (body[field] !== undefined) {
+            return (
+                `Field ${field} tidak dapat diatur melalui body. ` +
+                "Unggah ikon melalui file."
+            );
+        }
+    }
+
+    return null;
+}
+
+async function cleanupIconSafely(iconPath) {
+    if (!iconPath) return;
+
+    try {
+        await removeHelpCenterIcon(iconPath);
+    } catch (error) {
+        console.error(
+            "Gagal membersihkan ikon subkategori:",
+            error
+        );
+    }
 }
 
 function parsePositiveId(value) {
@@ -58,6 +111,8 @@ function mapSubcategoryRow(row) {
         slug: row.slug,
         description: row.description,
         icon: row.icon,
+        iconUrl: row.iconUrl,
+        iconPath: row.iconPath,
         sortOrder: row.sortOrder,
         isActive: row.isActive,
         category: {
@@ -77,6 +132,8 @@ const listColumns = {
     slug: subcategories.slug,
     description: subcategories.description,
     icon: subcategories.icon,
+    iconUrl: subcategories.iconUrl,
+    iconPath: subcategories.iconPath,
     sortOrder: subcategories.sortOrder,
     isActive: subcategories.isActive,
     createdAt: subcategories.createdAt,
@@ -106,6 +163,8 @@ function subcategoryQuery(filter) {
         subcategories.slug,
         subcategories.description,
         subcategories.icon,
+        subcategories.iconUrl,
+        subcategories.iconPath,
         subcategories.sortOrder,
         subcategories.isActive,
         subcategories.createdAt,
@@ -279,6 +338,8 @@ export async function getCmsSubcategoryById(req, res) {
 }
 
 export async function createCmsSubcategory(req, res) {
+    let uploadedIcon = null;
+
     try {
         const body = req.body ?? {};
 
@@ -286,6 +347,15 @@ export async function createCmsSubcategory(req, res) {
             return res.status(400).json({
                 success: false,
                 message: "sourceId tidak dapat diatur melalui CMS",
+            });
+        }
+
+        const iconSourceError = rejectIconSourceFields(body);
+
+        if (iconSourceError) {
+            return res.status(400).json({
+                success: false,
+                message: iconSourceError,
             });
         }
 
@@ -299,8 +369,9 @@ export async function createCmsSubcategory(req, res) {
             String(body.sortOrder).trim() === ""
                 ? 0
                 : Number(body.sortOrder);
-        const isActive =
-            body.isActive === undefined ? true : body.isActive;
+        const isActive = parseBooleanField(
+            body.isActive === undefined ? true : body.isActive
+        );
 
         if (!categoryId) {
             return res.status(400).json({
@@ -334,7 +405,7 @@ export async function createCmsSubcategory(req, res) {
             });
         }
 
-        if (typeof isActive !== "boolean") {
+        if (isActive === null) {
             return res.status(400).json({
                 success: false,
                 message: "isActive harus berupa boolean",
@@ -361,6 +432,13 @@ export async function createCmsSubcategory(req, res) {
             });
         }
 
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Ikon subkategori wajib diunggah.",
+            });
+        }
+
         const parentCategory = await findCategoryById(categoryId);
 
         if (!parentCategory) {
@@ -384,6 +462,11 @@ export async function createCmsSubcategory(req, res) {
             });
         }
 
+        uploadedIcon = await uploadHelpCenterIcon(
+            req.file,
+            ICON_FOLDER
+        );
+
         const [created] = await db
             .insert(subcategories)
             .values({
@@ -393,6 +476,8 @@ export async function createCmsSubcategory(req, res) {
                 description:
                     String(body.description ?? "").trim() || null,
                 icon: String(body.icon ?? "").trim() || null,
+                iconUrl: uploadedIcon.fileUrl,
+                iconPath: uploadedIcon.filePath,
                 sortOrder: parsedSortOrder,
                 isActive,
             })
@@ -405,6 +490,14 @@ export async function createCmsSubcategory(req, res) {
         });
     } catch (error) {
         console.error("Gagal menambahkan subkategori:", error);
+
+        /*
+         * Database gagal setelah ikon terunggah: hapus ikon
+         * baru agar tidak menjadi file yatim.
+         */
+        if (uploadedIcon?.filePath) {
+            await cleanupIconSafely(uploadedIcon.filePath);
+        }
 
         if (getDatabaseErrorCode(error) === "23505") {
             return res.status(409).json({
@@ -429,6 +522,9 @@ export async function createCmsSubcategory(req, res) {
 }
 
 export async function updateCmsSubcategory(req, res) {
+    let uploadedIcon = null;
+    let databaseUpdated = false;
+
     try {
         const id = parsePositiveId(req.params.id);
 
@@ -458,6 +554,15 @@ export async function updateCmsSubcategory(req, res) {
             return res.status(400).json({
                 success: false,
                 message: "sourceId tidak dapat diubah melalui CMS",
+            });
+        }
+
+        const iconSourceError = rejectIconSourceFields(body);
+
+        if (iconSourceError) {
+            return res.status(400).json({
+                success: false,
+                message: iconSourceError,
             });
         }
 
@@ -564,14 +669,29 @@ export async function updateCmsSubcategory(req, res) {
         }
 
         if (body.isActive !== undefined) {
-            if (typeof body.isActive !== "boolean") {
+            const isActive = parseBooleanField(body.isActive);
+
+            if (isActive === null) {
                 return res.status(400).json({
                     success: false,
                     message: "isActive harus berupa boolean",
                 });
             }
 
-            updates.isActive = body.isActive;
+            updates.isActive = isActive;
+        }
+
+        /*
+         * Ikon lama tetap dipakai bila tidak ada file baru.
+         */
+        if (req.file) {
+            uploadedIcon = await uploadHelpCenterIcon(
+                req.file,
+                ICON_FOLDER
+            );
+
+            updates.iconUrl = uploadedIcon.fileUrl;
+            updates.iconPath = uploadedIcon.filePath;
         }
 
         if (Object.keys(updates).length === 0) {
@@ -588,6 +708,16 @@ export async function updateCmsSubcategory(req, res) {
             .set(updates)
             .where(eq(subcategories.id, id));
 
+        databaseUpdated = true;
+
+        /*
+         * Ikon lama baru dihapus setelah database berhasil
+         * diperbarui.
+         */
+        if (uploadedIcon) {
+            await cleanupIconSafely(existing.iconPath);
+        }
+
         return res.status(200).json({
             success: true,
             message: "Subkategori berhasil diperbarui",
@@ -595,6 +725,14 @@ export async function updateCmsSubcategory(req, res) {
         });
     } catch (error) {
         console.error("Gagal memperbarui subkategori:", error);
+
+        /*
+         * Update database gagal: hapus ikon baru yang sudah
+         * terunggah agar tidak menjadi file yatim.
+         */
+        if (uploadedIcon?.filePath && !databaseUpdated) {
+            await cleanupIconSafely(uploadedIcon.filePath);
+        }
 
         if (getDatabaseErrorCode(error) === "23505") {
             return res.status(409).json({
@@ -633,6 +771,7 @@ export async function deleteCmsSubcategory(req, res) {
             .select({
                 id: subcategories.id,
                 name: subcategories.name,
+                iconPath: subcategories.iconPath,
             })
             .from(subcategories)
             .where(eq(subcategories.id, id))
@@ -672,6 +811,8 @@ export async function deleteCmsSubcategory(req, res) {
                 id: subcategories.id,
                 name: subcategories.name,
             });
+
+        await cleanupIconSafely(subcategory.iconPath);
 
         return res.status(200).json({
             success: true,

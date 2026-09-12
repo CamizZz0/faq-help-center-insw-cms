@@ -18,6 +18,7 @@ import {
 
 import CategoryForm from "../../components/cms/CategoryForm";
 import DeleteCategoryModal from "../../components/cms/DeleteCategoryModal";
+import IconPreview from "../../components/cms/IconPreview";
 
 export default function CategoryPage() {
     const [categories, setCategories] = useState([]);
@@ -262,8 +263,18 @@ export default function CategoryPage() {
                                                     : "border-slate-200"
                                                 }`}
                                         >
-                                            <div className="min-w-0">
-                                                <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
+                                                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-1.5 text-blue-600">
+                                                    <IconPreview
+                                                        iconUrl={category.iconUrl}
+                                                        iconName={category.icon}
+                                                        alt={`Ikon ${category.name}`}
+                                                        className="h-full w-full"
+                                                    />
+                                                </span>
+
+                                                <div className="min-w-0">
+                                                    <div className="flex flex-wrap items-center gap-2">
                                                     <h3 className="font-semibold text-slate-900">
                                                         {
                                                             category.name
@@ -297,6 +308,7 @@ export default function CategoryPage() {
                                                     {category.description ||
                                                         "Tidak ada deskripsi."}
                                                 </p>
+                                                </div>
                                             </div>
 
                                             <div className="flex shrink-0 items-center gap-2">

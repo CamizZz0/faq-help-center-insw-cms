@@ -7,6 +7,9 @@ import {
     updateCmsSubcategory,
 } from "../../services/api";
 
+import IconDropzone from "./IconDropzone";
+import { validateIconFile } from "./iconFile";
+
 const inputClass =
     "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 " +
     "outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 " +
@@ -19,7 +22,6 @@ function createInitialForm(subcategory) {
             : "",
         name: subcategory?.name ?? "",
         description: subcategory?.description ?? "",
-        icon: subcategory?.icon ?? "",
         sortOrder: subcategory?.sortOrder ?? 0,
         isActive: subcategory?.isActive ?? true,
     };
@@ -37,6 +39,7 @@ export default function SubcategoryForm({
     const [form, setForm] = useState(() =>
         createInitialForm(subcategory)
     );
+    const [iconFile, setIconFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
     const submitInProgress = useRef(false);
@@ -75,14 +78,40 @@ export default function SubcategoryForm({
             return;
         }
 
-        const payload = {
-            categoryId,
-            name,
-            description: form.description.trim(),
-            icon: form.icon.trim(),
-            sortOrder,
-            isActive: form.isActive,
-        };
+        /*
+         * Ikon wajib diunggah saat menambah subkategori.
+         */
+        if (!isEdit && !iconFile) {
+            setError("Ikon subkategori wajib diunggah.");
+            return;
+        }
+
+        if (iconFile) {
+            const iconError = validateIconFile(iconFile);
+
+            if (iconError) {
+                setError(iconError);
+                return;
+            }
+        }
+
+        const formData = new FormData();
+
+        formData.append("categoryId", String(categoryId));
+        formData.append("name", name);
+        formData.append(
+            "description",
+            form.description.trim()
+        );
+        formData.append("sortOrder", String(sortOrder));
+        formData.append(
+            "isActive",
+            String(form.isActive)
+        );
+
+        if (iconFile) {
+            formData.append("icon", iconFile);
+        }
 
         try {
             submitInProgress.current = true;
@@ -90,9 +119,12 @@ export default function SubcategoryForm({
             setError("");
 
             if (isEdit) {
-                await updateCmsSubcategory(subcategory.id, payload);
+                await updateCmsSubcategory(
+                    subcategory.id,
+                    formData
+                );
             } else {
-                await createCmsSubcategory(payload);
+                await createCmsSubcategory(formData);
             }
 
             navigate("/subcategories");
@@ -176,19 +208,32 @@ export default function SubcategoryForm({
                     />
                 </Field>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Field label="Ikon" htmlFor="subcategory-icon">
-                        <input
-                            id="subcategory-icon"
-                            value={form.icon}
-                            onChange={(event) =>
-                                updateField("icon", event.target.value)
-                            }
-                            placeholder="Contoh: file-text"
-                            className={inputClass}
-                        />
-                    </Field>
+                <Field
+                    label={isEdit ? "Ikon" : "Ikon *"}
+                    htmlFor="subcategory-icon"
+                >
+                    <IconDropzone
+                        id="subcategory-icon"
+                        file={iconFile}
+                        onChange={setIconFile}
+                        existingIconUrl={
+                            subcategory?.iconUrl ?? ""
+                        }
+                        existingIconName={
+                            subcategory?.icon ?? ""
+                        }
+                        disabled={submitting}
+                    />
 
+                    {isEdit && (
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                            Biarkan kosong bila ikon lama tetap
+                            digunakan.
+                        </p>
+                    )}
+                </Field>
+
+                <div className="grid gap-6 md:grid-cols-2">
                     <Field label="Urutan" htmlFor="subcategory-order">
                         <input
                             id="subcategory-order"
