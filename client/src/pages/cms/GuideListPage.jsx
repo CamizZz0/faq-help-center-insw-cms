@@ -97,7 +97,108 @@ export default function GuideListPage() {
                 {success && <p role="status" className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">{success}</p>}
                 {error && <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</p>}
 
-                <div className="mt-6 overflow-x-auto">
+                <div className="mt-6 space-y-3 lg:hidden">
+                    {loading ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Memuat data panduan...
+                        </p>
+                    ) : error ? (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center">
+                            <p className="text-slate-500">
+                                Daftar panduan belum dapat ditampilkan.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setRefreshKey(
+                                        (current) => current + 1
+                                    )
+                                }
+                                className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                            >
+                                Coba lagi
+                            </button>
+                        </div>
+                    ) : guides.length === 0 ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Panduan tidak ditemukan.
+                        </p>
+                    ) : (
+                        guides.map((guide) => (
+                            <article
+                                key={guide.id}
+                                className="rounded-2xl border border-slate-200 bg-white p-4"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-start gap-2">
+                                        <FileText
+                                            size={18}
+                                            aria-hidden="true"
+                                            className="mt-0.5 shrink-0 text-slate-400"
+                                        />
+
+                                        <p
+                                            className="line-clamp-2 font-medium text-slate-900"
+                                            title={guide.title}
+                                        >
+                                            {guide.title}
+                                        </p>
+                                    </div>
+
+                                    <span
+                                        className={
+                                            "inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold " +
+                                            (guide.isPublished
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-amber-100 text-amber-700")
+                                        }
+                                    >
+                                        {guide.isPublished
+                                            ? "Terbit"
+                                            : "Draf"}
+                                    </span>
+                                </div>
+
+                                <dl className="mt-3 flex gap-2 text-sm text-slate-600">
+                                    <dt className="shrink-0 text-slate-500">
+                                        Urutan
+                                    </dt>
+
+                                    <dd>{guide.sortOrder}</dd>
+                                </dl>
+
+                                <div className="mt-4 flex gap-2">
+                                    <Link
+                                        to={"/guides/" + guide.id + "/edit"}
+                                        aria-label={`Edit ${guide.title}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                    >
+                                        <Pencil size={17} />
+                                        Edit
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        disabled={deleting}
+                                        aria-label={`Hapus ${guide.title}`}
+                                        onClick={() => {
+                                            setGuideToDelete(guide);
+                                            setDeleteError("");
+                                            setSuccess("");
+                                        }}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <Trash2 size={17} />
+                                        Hapus
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    )}
+                </div>
+
+                <div className="mt-6 hidden overflow-x-auto lg:block">
                     <table aria-label="Daftar Panduan" aria-busy={loading} className="w-full min-w-[700px] text-left">
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">

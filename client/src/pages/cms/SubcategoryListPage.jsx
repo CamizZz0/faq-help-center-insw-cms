@@ -307,7 +307,125 @@ export default function SubcategoryListPage() {
                     </div>
                 )}
 
-                <div className="mt-6 overflow-x-auto">
+                <div className="mt-6 space-y-3 lg:hidden">
+                    {loading ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Memuat data subkategori...
+                        </p>
+                    ) : error ? (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center">
+                            <p className="text-slate-500">
+                                Daftar subkategori belum dapat ditampilkan.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setRefreshKey(
+                                        (current) => current + 1
+                                    )
+                                }
+                                className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                            >
+                                Coba lagi
+                            </button>
+                        </div>
+                    ) : subcategories.length === 0 ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Subkategori tidak ditemukan.
+                        </p>
+                    ) : (
+                        subcategories.map((item) => (
+                            <article
+                                key={item.id}
+                                className="rounded-2xl border border-slate-200 bg-white p-4"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <p className="min-w-0 break-words font-medium text-slate-900">
+                                        {item.name}
+                                    </p>
+
+                                    <span
+                                        className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                                            item.isActive
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-slate-200 text-slate-600"
+                                        }`}
+                                    >
+                                        {item.isActive
+                                            ? "Aktif"
+                                            : "Tidak aktif"}
+                                    </span>
+                                </div>
+
+                                <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+                                    {item.description ||
+                                        "Tidak ada deskripsi."}
+                                </p>
+
+                                <dl className="mt-3 space-y-1 text-sm text-slate-600">
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Kategori
+                                        </dt>
+
+                                        <dd className="min-w-0 break-words">
+                                            {item.category?.name ?? "-"}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Jumlah Topik
+                                        </dt>
+
+                                        <dd className="min-w-0">
+                                            {item.topicCount ?? 0}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Urutan
+                                        </dt>
+
+                                        <dd className="min-w-0">
+                                            {item.sortOrder}
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                <div className="mt-4 flex gap-2">
+                                    <Link
+                                        to={`/subcategories/${item.id}/edit`}
+                                        aria-label={`Edit ${item.name}`}
+                                        title={`Edit ${item.name}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                    >
+                                        <Pencil size={17} />
+                                        Edit
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleOpenDelete(item)
+                                        }
+                                        disabled={deleting}
+                                        aria-label={`Hapus ${item.name}`}
+                                        title={`Hapus ${item.name}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <Trash2 size={17} />
+                                        Hapus
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    )}
+                </div>
+
+                <div className="mt-6 hidden overflow-x-auto lg:block">
                     <table
                         aria-label="Daftar subkategori"
                         aria-busy={loading}

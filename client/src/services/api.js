@@ -55,6 +55,10 @@ function createQuery(params = {}) {
         : "";
 }
 
+export function getCmsDashboard() {
+    return request("/cms/dashboard");
+}
+
 export function getCmsFaqs(params = {}) {
     return request(
         `/cms/faqs${createQuery(params)}`

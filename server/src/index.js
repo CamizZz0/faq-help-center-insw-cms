@@ -18,6 +18,7 @@ import cmsSubcategoryRoutes from "./routes/cmsSubcategoryRoutes.js";
 import cmsTopicRoutes from "./routes/cmsTopicRoutes.js";
 import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
 import cmsTutorialRoutes from "./routes/cmsTutorialRoutes.js";
+import cmsDashboardRoutes from "./routes/cmsDashboardRoutes.js";
 
 import { supabase } from "./config/supabase.js";
 
@@ -68,6 +69,7 @@ app.use("/api/tutorials", tutorialRoutes);
 app.use("/api/search", searchRoutes);
 
 app.use("/api/cms/faqs", cmsFaqRoutes);
+app.use("/api/cms/dashboard", cmsDashboardRoutes);
 
 app.get("/api/health", async (req, res) => {
     try {

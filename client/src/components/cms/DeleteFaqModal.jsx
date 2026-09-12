@@ -69,7 +69,7 @@ export default function DeleteFaqModal({
                 </p>
             )}
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                     type="button"
                     autoFocus

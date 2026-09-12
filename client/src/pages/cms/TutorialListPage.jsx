@@ -75,7 +75,117 @@ export default function TutorialListPage() {
                 </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="mt-6 space-y-3 lg:hidden">
+                {loading ? (
+                    <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                        Memuat data tutorial...
+                    </p>
+                ) : error ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center">
+                        <p className="text-slate-500">
+                            Daftar tutorial belum dapat ditampilkan.
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setRefreshKey(
+                                    (current) => current + 1
+                                )
+                            }
+                            className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                        >
+                            Coba lagi
+                        </button>
+                    </div>
+                ) : tutorials.length === 0 ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+                        <PlayCircle
+                            size={40}
+                            className="mx-auto text-slate-400"
+                        />
+
+                        <h2 className="mt-3 font-semibold text-slate-900">
+                            Tutorial belum tersedia
+                        </h2>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                            Tambahkan tutorial atau ubah filter
+                            pencarian.
+                        </p>
+                    </div>
+                ) : (
+                    tutorials.map((tutorial) => (
+                        <article
+                            key={tutorial.id}
+                            className="rounded-2xl border border-slate-200 bg-white p-4"
+                        >
+                            <div className="flex items-start gap-3">
+                                <img
+                                    src={tutorial.thumbnailUrl}
+                                    alt=""
+                                    className="h-16 w-24 shrink-0 rounded-lg bg-slate-100 object-cover"
+                                />
+
+                                <div className="min-w-0 flex-1">
+                                    <p className="line-clamp-2 font-semibold text-slate-900">
+                                        {tutorial.title}
+                                    </p>
+
+                                    <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                                        {tutorial.description ||
+                                            tutorial.videoUrl}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-3 flex items-center justify-between gap-3">
+                                <span
+                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                        tutorial.isPublished
+                                            ? "bg-emerald-50 text-emerald-700"
+                                            : "bg-amber-50 text-amber-700"
+                                    }`}
+                                >
+                                    {tutorial.isPublished
+                                        ? "Terbit"
+                                        : "Draft"}
+                                </span>
+
+                                <span className="text-sm text-slate-500">
+                                    Urutan {tutorial.sortOrder}
+                                </span>
+                            </div>
+
+                            <div className="mt-4 flex gap-2">
+                                <Link
+                                    to={`/tutorials/${tutorial.id}/edit`}
+                                    aria-label={`Edit ${tutorial.title}`}
+                                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                >
+                                    <Pencil size={17} />
+                                    Edit
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    aria-label={`Hapus ${tutorial.title}`}
+                                    onClick={() => {
+                                        setTutorialToDelete(tutorial);
+                                        setDeleteError("");
+                                    }}
+                                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50"
+                                >
+                                    <Trash2 size={17} />
+                                    Hapus
+                                </button>
+                            </div>
+                        </article>
+                    ))
+                )}
+            </div>
+
+            <div className="mt-6 hidden overflow-hidden rounded-2xl border border-slate-200 bg-white lg:block">
                 {loading ? <p className="p-8 text-center text-slate-600">Memuat data tutorial...</p>
                     : error ? <p role="alert" className="m-5 rounded-xl bg-red-50 p-4 text-red-600">{error}</p>
                     : tutorials.length === 0 ? <div className="p-10 text-center"><PlayCircle size={40} className="mx-auto text-slate-400" /><h2 className="mt-3 font-semibold text-slate-900">Tutorial belum tersedia</h2><p className="mt-1 text-sm text-slate-500">Tambahkan tutorial atau ubah filter pencarian.</p></div>

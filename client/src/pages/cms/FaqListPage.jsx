@@ -322,7 +322,114 @@ export default function FaqListPage() {
                     </div>
                 )}
 
-                <div className="mt-6 overflow-x-auto">
+                <div className="mt-6 space-y-3 lg:hidden">
+                    {loading ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Memuat data FAQ...
+                        </p>
+                    ) : error ? (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center">
+                            <p className="text-slate-500">
+                                Daftar FAQ belum dapat ditampilkan.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setRefreshKey(
+                                        (current) => current + 1
+                                    )
+                                }
+                                className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                            >
+                                Coba lagi
+                            </button>
+                        </div>
+                    ) : faqs.length === 0 ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            FAQ tidak ditemukan.
+                        </p>
+                    ) : (
+                        faqs.map((faq) => (
+                            <article
+                                key={faq.id}
+                                className="rounded-2xl border border-slate-200 bg-white p-4"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <p className="line-clamp-2 font-medium text-slate-900">
+                                        {faq.question}
+                                    </p>
+
+                                    <span
+                                        className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                                            faq.isPublished
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-amber-100 text-amber-700"
+                                        }`}
+                                    >
+                                        {faq.isPublished
+                                            ? "Terbit"
+                                            : "Draf"}
+                                    </span>
+                                </div>
+
+                                {faq.isPopular && (
+                                    <span className="mt-2 inline-block text-xs font-medium text-amber-600">
+                                        FAQ Populer
+                                    </span>
+                                )}
+
+                                <dl className="mt-3 space-y-1 text-sm text-slate-600">
+                                    <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-slate-500">
+                                            Kategori
+                                        </dt>
+
+                                        <dd className="min-w-0 break-words">
+                                            {faq.category?.name ?? "-"}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-slate-500">
+                                            Topik
+                                        </dt>
+
+                                        <dd className="min-w-0 break-words">
+                                            {faq.topic?.name ?? "-"}
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                <div className="mt-4 flex gap-2">
+                                    <Link
+                                        to={`/faqs/${faq.id}/edit`}
+                                        aria-label={`Edit ${faq.question}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                    >
+                                        <Pencil size={17} />
+                                        Edit
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleOpenDelete(faq)
+                                        }
+                                        disabled={deleting}
+                                        aria-label={`Hapus ${faq.question}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <Trash2 size={17} />
+                                        Hapus
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    )}
+                </div>
+
+                <div className="mt-6 hidden overflow-x-auto lg:block">
                     <table
                         aria-label="Daftar FAQ"
                         aria-busy={loading}

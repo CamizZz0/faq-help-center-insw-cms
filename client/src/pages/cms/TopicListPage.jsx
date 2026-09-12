@@ -235,7 +235,137 @@ export default function TopicListPage() {
                 {filterError && <div role="alert" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">Filter tidak dapat dimuat: {filterError}</div>}
                 {error && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</div>}
 
-                <div className="mt-6 overflow-x-auto">
+                <div className="mt-6 space-y-3 lg:hidden">
+                    {loading ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Memuat data topik...
+                        </p>
+                    ) : error ? (
+                        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-12 text-center">
+                            <p className="text-slate-500">
+                                Daftar topik belum dapat ditampilkan.
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setRefreshKey(
+                                        (current) => current + 1
+                                    )
+                                }
+                                className="mt-3 font-semibold text-blue-600 hover:text-blue-800"
+                            >
+                                Coba lagi
+                            </button>
+                        </div>
+                    ) : topics.length === 0 ? (
+                        <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
+                            Topik tidak ditemukan.
+                        </p>
+                    ) : (
+                        topics.map((topic) => (
+                            <article
+                                key={topic.id}
+                                className="rounded-2xl border border-slate-200 bg-white p-4"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <p className="min-w-0 break-words font-medium text-slate-900">
+                                        {topic.name}
+                                    </p>
+
+                                    <span
+                                        className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                                            topic.isActive
+                                                ? "bg-emerald-100 text-emerald-700"
+                                                : "bg-slate-100 text-slate-600"
+                                        }`}
+                                    >
+                                        {topic.isActive
+                                            ? "Aktif"
+                                            : "Tidak aktif"}
+                                    </span>
+                                </div>
+
+                                <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+                                    {topic.description ||
+                                        "Tidak ada deskripsi."}
+                                </p>
+
+                                <dl className="mt-3 space-y-1 text-sm text-slate-600">
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Subkategori
+                                        </dt>
+
+                                        <dd className="min-w-0 break-words">
+                                            {topic.subcategory?.name ?? "-"}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Kategori
+                                        </dt>
+
+                                        <dd className="min-w-0 break-words">
+                                            {topic.category?.name ?? "-"}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Jumlah FAQ
+                                        </dt>
+
+                                        <dd className="min-w-0">
+                                            {topic.faqCount ?? 0}
+                                        </dd>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <dt className="w-24 shrink-0 text-slate-500">
+                                            Urutan
+                                        </dt>
+
+                                        <dd className="min-w-0">
+                                            {topic.sortOrder}
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                <div className="mt-4 flex gap-2">
+                                    <Link
+                                        to={`/topics/${topic.id}/edit`}
+                                        aria-label={`Edit ${topic.name}`}
+                                        title={`Edit ${topic.name}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                                    >
+                                        <Pencil size={17} />
+                                        Edit
+                                    </Link>
+
+                                    <button
+                                        type="button"
+                                        disabled={deleting}
+                                        onClick={() => {
+                                            setDeleteError("");
+                                            setSuccess("");
+                                            setTopicToDelete(topic);
+                                        }}
+                                        aria-label={`Hapus ${topic.name}`}
+                                        title={`Hapus ${topic.name}`}
+                                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <Trash2 size={17} />
+                                        Hapus
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    )}
+                </div>
+
+                <div className="mt-6 hidden overflow-x-auto lg:block">
                     <table aria-label="Daftar topik" aria-busy={loading} className="w-full min-w-[1050px] text-left">
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">

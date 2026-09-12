@@ -18,7 +18,7 @@ export default function DeleteGuideModal({ guide, deleting, error, onCancel, onC
             <p id="delete-guide-description" className="mt-3 leading-7 text-slate-600">Panduan ini akan dihapus permanen dan tidak lagi tampil di website publik. Dokumen pada URL asal tidak dihapus.</p>
             <p className="mt-4 break-words rounded-xl bg-slate-50 p-4 font-medium">{guide?.title}</p>
             {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button type="button" autoFocus disabled={deleting} onClick={onCancel} className="rounded-xl border border-slate-300 px-5 py-3 font-semibold disabled:opacity-50">Batal</button>
                 <button type="button" disabled={deleting} onClick={onConfirm} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-50"><Trash2 size={18} />{deleting ? "Menghapus..." : "Hapus Panduan"}</button>
             </div>
