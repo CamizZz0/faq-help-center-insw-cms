@@ -15,6 +15,7 @@ import searchRoutes from "./routes/searchRoutes.js";
 import cmsFaqRoutes from "./routes/cmsFaqRoutes.js";
 import cmsCategoryRoutes from "./routes/cmsCategoryRoutes.js";
 import cmsSubcategoryRoutes from "./routes/cmsSubcategoryRoutes.js";
+import cmsTopicRoutes from "./routes/cmsTopicRoutes.js";
 import cmsGuideRoutes from "./routes/cmsGuideRoutes.js";
 import cmsTutorialRoutes from "./routes/cmsTutorialRoutes.js";
 
@@ -59,6 +60,7 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/cms/categories", cmsCategoryRoutes);
 app.use("/api/cms/subcategories", cmsSubcategoryRoutes);
+app.use("/api/cms/topics", cmsTopicRoutes);
 app.use("/api/cms/guides", cmsGuideRoutes);
 app.use("/api/cms/tutorials", cmsTutorialRoutes);
 app.use("/api/guides", guideRoutes);

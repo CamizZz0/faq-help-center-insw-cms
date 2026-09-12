@@ -6,11 +6,12 @@ import {
 import CmsLayout from "./components/cms/CmsLayout";
 import DashboardPage from "./pages/cms/DashboardPage";
 import FaqListPage from "./pages/cms/FaqListPage";
-import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
 import CategoryPage from "./pages/cms/CategoryPage";
 import SubcategoryListPage from "./pages/cms/SubcategoryListPage";
 import SubcategoryFormPage from "./pages/cms/SubcategoryFormPage";
+import TopicListPage from "./pages/cms/TopicListPage";
+import TopicFormPage from "./pages/cms/TopicFormPage";
 import GuideListPage from "./pages/cms/GuideListPage";
 import GuideFormPage from "./pages/cms/GuideFormPage";
 import TutorialListPage from "./pages/cms/TutorialListPage";
@@ -47,7 +48,17 @@ export default function App() {
 
         <Route
           path="topics"
-          element={<PlaceholderPage title="Kelola Topik" />}
+          element={<TopicListPage />}
+        />
+
+        <Route
+          path="topics/new"
+          element={<TopicFormPage />}
+        />
+
+        <Route
+          path="topics/:topicId/edit"
+          element={<TopicFormPage />}
         />
 
         <Route

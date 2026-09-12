@@ -183,6 +183,34 @@ export function deleteCmsSubcategory(id) {
     );
 }
 
+export function getCmsTopics(params = {}) {
+    return request(`/cms/topics${createQuery(params)}`);
+}
+
+export function getCmsTopicById(id) {
+    return request(`/cms/topics/${encodeURIComponent(id)}`);
+}
+
+export function createCmsTopic(payload) {
+    return request("/cms/topics", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+}
+
+export function updateCmsTopic(id, payload) {
+    return request(`/cms/topics/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+    });
+}
+
+export function deleteCmsTopic(id) {
+    return request(`/cms/topics/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+    });
+}
+
 export function getCmsGuides(params = {}) {
     return request(`/cms/guides${createQuery(params)}`);
 }
