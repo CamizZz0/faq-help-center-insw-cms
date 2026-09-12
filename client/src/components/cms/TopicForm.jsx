@@ -21,7 +21,6 @@ function createInitialForm(topic) {
             : "",
         name: topic?.name ?? "",
         description: topic?.description ?? "",
-        sortOrder: topic?.sortOrder ?? 0,
         isActive: topic?.isActive ?? true,
     };
 }
@@ -115,10 +114,6 @@ export default function TopicForm({ mode, topic, categories }) {
 
         const subcategoryId = Number(form.subcategoryId);
         const name = form.name.trim();
-        const sortOrder =
-            String(form.sortOrder).trim() === ""
-                ? 0
-                : Number(form.sortOrder);
 
         if (!form.categorySlug) {
             setError("Pilih kategori induk.");
@@ -132,16 +127,10 @@ export default function TopicForm({ mode, topic, categories }) {
             setError("Nama topik harus terdiri dari 2–150 karakter.");
             return;
         }
-        if (!Number.isInteger(sortOrder) || sortOrder < 0) {
-            setError("Urutan harus berupa bilangan bulat minimal 0.");
-            return;
-        }
-
         const payload = {
             subcategoryId,
             name,
             description: form.description.trim(),
-            sortOrder,
             isActive: form.isActive,
         };
 
@@ -257,20 +246,6 @@ export default function TopicForm({ mode, topic, categories }) {
                         }
                         placeholder="Tuliskan ringkasan topik."
                         className={`${inputClass} resize-y`}
-                    />
-                </Field>
-
-                <Field label="Urutan" htmlFor="topic-order">
-                    <input
-                        id="topic-order"
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={form.sortOrder}
-                        onChange={(event) =>
-                            updateField("sortOrder", event.target.value)
-                        }
-                        className={inputClass}
                     />
                 </Field>
 

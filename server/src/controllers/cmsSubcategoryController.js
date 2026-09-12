@@ -4,6 +4,7 @@ import {
     count,
     eq,
     ilike,
+    max,
     or,
 } from "drizzle-orm";
 
@@ -350,6 +351,14 @@ export async function createCmsSubcategory(req, res) {
             });
         }
 
+        if (body.sortOrder !== undefined) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Urutan ditentukan otomatis oleh sistem dan tidak boleh dikirim",
+            });
+        }
+
         const iconSourceError = rejectIconSourceFields(body);
 
         if (iconSourceError) {
@@ -363,12 +372,6 @@ export async function createCmsSubcategory(req, res) {
         const cleanName =
             typeof body.name === "string" ? body.name.trim() : "";
         const cleanSlug = createSlug(cleanName);
-        const parsedSortOrder =
-            body.sortOrder === undefined ||
-            body.sortOrder === null ||
-            String(body.sortOrder).trim() === ""
-                ? 0
-                : Number(body.sortOrder);
         const isActive = parseBooleanField(
             body.isActive === undefined ? true : body.isActive
         );
@@ -391,17 +394,6 @@ export async function createCmsSubcategory(req, res) {
             return res.status(400).json({
                 success: false,
                 message: "Nama subkategori tidak menghasilkan slug yang valid",
-            });
-        }
-
-        if (
-            !Number.isInteger(parsedSortOrder) ||
-            parsedSortOrder < 0 ||
-            parsedSortOrder > 2147483647
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Urutan harus berupa bilangan bulat minimal 0",
             });
         }
 
@@ -467,6 +459,13 @@ export async function createCmsSubcategory(req, res) {
             ICON_FOLDER
         );
 
+        const [orderRow] = await db
+            .select({ maxOrder: max(subcategories.sortOrder) })
+            .from(subcategories)
+            .where(eq(subcategories.categoryId, categoryId));
+
+        const nextSortOrder = (Number(orderRow?.maxOrder) || 0) + 1;
+
         const [created] = await db
             .insert(subcategories)
             .values({
@@ -478,7 +477,7 @@ export async function createCmsSubcategory(req, res) {
                 icon: String(body.icon ?? "").trim() || null,
                 iconUrl: uploadedIcon.fileUrl,
                 iconPath: uploadedIcon.filePath,
-                sortOrder: parsedSortOrder,
+                sortOrder: nextSortOrder,
                 isActive,
             })
             .returning({ id: subcategories.id });
@@ -644,28 +643,6 @@ export async function updateCmsSubcategory(req, res) {
             }
 
             updates.icon = String(body.icon ?? "").trim() || null;
-        }
-
-        if (body.sortOrder !== undefined) {
-            const sortOrder =
-                body.sortOrder === null ||
-                String(body.sortOrder).trim() === ""
-                    ? 0
-                    : Number(body.sortOrder);
-
-            if (
-                !Number.isInteger(sortOrder) ||
-                sortOrder < 0 ||
-                sortOrder > 2147483647
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message:
-                        "Urutan harus berupa bilangan bulat minimal 0",
-                });
-            }
-
-            updates.sortOrder = sortOrder;
         }
 
         if (body.isActive !== undefined) {

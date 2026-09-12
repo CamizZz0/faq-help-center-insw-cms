@@ -297,11 +297,7 @@ export default function CategoryPage() {
                                                     {
                                                         total
                                                     }{" "}
-                                                    subkategori ·
-                                                    Urutan{" "}
-                                                    {
-                                                        category.sortOrder
-                                                    }
+                                                    subkategori
                                                 </p>
 
                                                 <p className="mt-2 line-clamp-2 text-sm text-slate-600">

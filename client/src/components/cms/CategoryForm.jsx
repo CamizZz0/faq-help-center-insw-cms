@@ -25,7 +25,6 @@ function createInitialForm(category) {
         name: category?.name ?? "",
         slug: category?.slug ?? "",
         description: category?.description ?? "",
-        sortOrder: category?.sortOrder ?? 0,
         isActive: category?.isActive ?? true,
     };
 }
@@ -89,7 +88,6 @@ export default function CategoryForm({
 
         const name = form.name.trim();
         const slug = createSlug(form.slug || name);
-        const sortOrder = Number(form.sortOrder);
 
         if (name.length < 3) {
             setError(
@@ -100,17 +98,6 @@ export default function CategoryForm({
 
         if (!slug) {
             setError("Slug kategori tidak valid.");
-            return;
-        }
-
-        if (
-            String(form.sortOrder).trim() === "" ||
-            !Number.isInteger(sortOrder) ||
-            sortOrder < 0
-        ) {
-            setError(
-                "Urutan harus berupa bilangan bulat minimal 0."
-            );
             return;
         }
 
@@ -139,7 +126,6 @@ export default function CategoryForm({
             "description",
             form.description.trim()
         );
-        formData.append("sortOrder", String(sortOrder));
         formData.append(
             "isActive",
             String(form.isActive)
@@ -301,29 +287,6 @@ export default function CategoryForm({
                             </p>
                         )}
                     </Field>
-
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                        <Field
-                            label="Urutan"
-                            htmlFor="category-order"
-                        >
-                            <input
-                                id="category-order"
-                                type="number"
-                                min="0"
-                                step="1"
-                                required
-                                value={form.sortOrder}
-                                onChange={(event) =>
-                                    updateField(
-                                        "sortOrder",
-                                        event.target.value
-                                    )
-                                }
-                                className={inputClass}
-                            />
-                        </Field>
-                    </div>
 
                     <label className="flex items-center justify-between gap-4 rounded-xl bg-blue-50 p-4">
                         <span>

@@ -61,7 +61,7 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
             "INSERT INTO categories (name, slug, is_active) VALUES ($1, $2, false) RETURNING id",
             [`Legacy ${token}`, `legacy-${token}`],
         )).rows[0];
-        const payload = { title: `${token} Panduan & Dokumen`, description: `${token} deskripsi khusus`, sortOrder: 3, isPublished: false };
+        const payload = { title: `${token} Panduan & Dokumen`, description: `${token} deskripsi khusus`, isPublished: false };
         let guide;
         await t.test("create draft without category; automatic slug and no thumbnail", async () => {
             guide = (await request("/cms/guides", { method: "POST", body: payload, expected: 201 })).data;
@@ -135,7 +135,7 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
             assert.equal(await download.text(), await pdf.text());
         });
         await t.test("search title only, ignores category query, and keeps stable pagination", async () => {
-            const second = (await request("/cms/guides", { method: "POST", body: { ...payload, title: `${token} Kedua`, categoryId: 2147483647, sortOrder: 3 }, expected: 201 })).data;
+            const second = (await request("/cms/guides", { method: "POST", body: { ...payload, title: `${token} Kedua`, categoryId: 2147483647 }, expected: 201 })).data;
             assert.equal(second.categoryId, null);
             const firstPage = await request(`/cms/guides?search=${token}&category=ignored&limit=1`);
             const secondPage = await request(`/cms/guides?search=${token}&category=ignored&limit=1&page=2`);
@@ -156,6 +156,7 @@ test("Panduan CMS CRUD and public integration (transaction rollback)", { timeout
                 await request(`/cms/guides/${guide.id}`, { method: "PATCH", body, expected: 400 });
             }
             await request("/cms/guides", { method: "POST", body: { ...payload, title: "!!!" }, expected: 400 });
+            await request("/cms/guides", { method: "POST", body: { ...payload, title: `${token} Urutan ditolak`, sortOrder: 1 }, expected: 400 });
         });
         await t.test("legacy external URL is retained on edit and never deleted as a local file", async () => {
             const externalUrl = `https://example.com${new URL(guide.fileUrl).pathname}`;

@@ -160,14 +160,6 @@ export default function GuideListPage() {
                                     </span>
                                 </div>
 
-                                <dl className="mt-3 flex gap-2 text-sm text-slate-600">
-                                    <dt className="shrink-0 text-slate-500">
-                                        Urutan
-                                    </dt>
-
-                                    <dd>{guide.sortOrder}</dd>
-                                </dl>
-
                                 <div className="mt-4 flex gap-2">
                                     <Link
                                         to={"/guides/" + guide.id + "/edit"}
@@ -199,22 +191,21 @@ export default function GuideListPage() {
                 </div>
 
                 <div className="mt-6 hidden overflow-x-auto lg:block">
-                    <table aria-label="Daftar Panduan" aria-busy={loading} className="w-full min-w-[700px] text-left">
+                    <table aria-label="Daftar Panduan" aria-busy={loading} className="w-full min-w-[600px] text-left">
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
                                 <th scope="col" className="px-4 py-4">Judul</th>
-                                <th scope="col" className="px-4 py-4">Urutan</th>
                                 <th scope="col" className="px-4 py-4">Status</th>
                                 <th scope="col" className="px-4 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Memuat data panduan...</td></tr>
+                                <tr><td colSpan={3} className="px-4 py-16 text-center text-slate-500">Memuat data panduan...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Daftar panduan belum dapat ditampilkan.</td></tr>
+                                <tr><td colSpan={3} className="px-4 py-16 text-center text-slate-500">Daftar panduan belum dapat ditampilkan.</td></tr>
                             ) : guides.length === 0 ? (
-                                <tr><td colSpan={4} className="px-4 py-16 text-center text-slate-500">Panduan tidak ditemukan.</td></tr>
+                                <tr><td colSpan={3} className="px-4 py-16 text-center text-slate-500">Panduan tidak ditemukan.</td></tr>
                             ) : guides.map(guide => (
                                 <tr key={guide.id} className="border-b border-slate-100 last:border-none hover:bg-slate-50">
                                     <td className="max-w-md px-4 py-4">
@@ -223,7 +214,6 @@ export default function GuideListPage() {
                                             <p className="line-clamp-2 font-medium text-slate-900" title={guide.title}>{guide.title}</p>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{guide.sortOrder}</td>
                                     <td className="px-4 py-4">
                                         <span className={"inline-flex rounded-full px-3 py-1 text-xs font-semibold " + (guide.isPublished ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700")}>{guide.isPublished ? "Terbit" : "Draf"}</span>
                                     </td>

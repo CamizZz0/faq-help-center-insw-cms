@@ -22,7 +22,6 @@ function createInitialForm(subcategory) {
             : "",
         name: subcategory?.name ?? "",
         description: subcategory?.description ?? "",
-        sortOrder: subcategory?.sortOrder ?? 0,
         isActive: subcategory?.isActive ?? true,
     };
 }
@@ -58,10 +57,6 @@ export default function SubcategoryForm({
 
         const name = form.name.trim();
         const categoryId = Number(form.categoryId);
-        const sortOrder =
-            String(form.sortOrder).trim() === ""
-                ? 0
-                : Number(form.sortOrder);
 
         if (!Number.isInteger(categoryId) || categoryId < 1) {
             setError("Pilih kategori induk.");
@@ -70,11 +65,6 @@ export default function SubcategoryForm({
 
         if (name.length < 2 || name.length > 150) {
             setError("Nama subkategori harus terdiri dari 2–150 karakter.");
-            return;
-        }
-
-        if (!Number.isInteger(sortOrder) || sortOrder < 0) {
-            setError("Urutan harus berupa bilangan bulat minimal 0.");
             return;
         }
 
@@ -103,7 +93,6 @@ export default function SubcategoryForm({
             "description",
             form.description.trim()
         );
-        formData.append("sortOrder", String(sortOrder));
         formData.append(
             "isActive",
             String(form.isActive)
@@ -232,22 +221,6 @@ export default function SubcategoryForm({
                         </p>
                     )}
                 </Field>
-
-                <div className="grid gap-6 md:grid-cols-2">
-                    <Field label="Urutan" htmlFor="subcategory-order">
-                        <input
-                            id="subcategory-order"
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={form.sortOrder}
-                            onChange={(event) =>
-                                updateField("sortOrder", event.target.value)
-                            }
-                            className={inputClass}
-                        />
-                    </Field>
-                </div>
 
                 <label className="flex items-center justify-between gap-4 rounded-xl bg-blue-50 p-4">
                     <span>

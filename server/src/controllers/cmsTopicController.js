@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike, or } from "drizzle-orm";
+import { and, asc, count, eq, ilike, max, or } from "drizzle-orm";
 import { db } from "../config/db.js";
 import { categories, faqs, faqTopics, subcategories } from "../models/schema.js";
 
@@ -126,17 +126,6 @@ async function findSubcategory(id) {
         .limit(1);
 
     return row ?? null;
-}
-
-function parseSortOrder(value) {
-    const parsed =
-        value === undefined || value === null || String(value).trim() === ""
-            ? 0
-            : Number(value);
-
-    return Number.isInteger(parsed) && parsed >= 0 && parsed <= MAX_INTEGER
-        ? parsed
-        : null;
 }
 
 function validationResponse(res, message) {
@@ -295,6 +284,12 @@ export async function createCmsTopic(req, res) {
         if (body.slug !== undefined) {
             return validationResponse(res, "Slug topik dibuat otomatis dari nama");
         }
+        if (body.sortOrder !== undefined) {
+            return validationResponse(
+                res,
+                "Urutan ditentukan otomatis oleh sistem dan tidak boleh dikirim",
+            );
+        }
 
         const subcategoryId = parsePositiveId(body.subcategoryId);
         if (!subcategoryId) {
@@ -327,14 +322,6 @@ export async function createCmsTopic(req, res) {
             return validationResponse(res, "Deskripsi harus berupa teks");
         }
 
-        const sortOrder = parseSortOrder(body.sortOrder);
-        if (sortOrder === null) {
-            return validationResponse(
-                res,
-                "Urutan harus berupa bilangan bulat minimal 0",
-            );
-        }
-
         const isActive = body.isActive === undefined ? true : body.isActive;
         if (typeof isActive !== "boolean") {
             return validationResponse(res, "isActive harus berupa boolean");
@@ -356,6 +343,13 @@ export async function createCmsTopic(req, res) {
             });
         }
 
+        const [orderRow] = await db
+            .select({ maxOrder: max(faqTopics.sortOrder) })
+            .from(faqTopics)
+            .where(eq(faqTopics.subcategoryId, subcategoryId));
+
+        const nextSortOrder = (Number(orderRow?.maxOrder) || 0) + 1;
+
         const [created] = await db
             .insert(faqTopics)
             .values({
@@ -363,7 +357,7 @@ export async function createCmsTopic(req, res) {
                 name,
                 slug,
                 description: body.description?.trim() || null,
-                sortOrder,
+                sortOrder: nextSortOrder,
                 isActive,
             })
             .returning({ id: faqTopics.id });
@@ -441,17 +435,6 @@ export async function updateCmsTopic(req, res) {
                 return validationResponse(res, "Deskripsi harus berupa teks");
             }
             updates.description = body.description?.trim() || null;
-        }
-
-        if (body.sortOrder !== undefined) {
-            const sortOrder = parseSortOrder(body.sortOrder);
-            if (sortOrder === null) {
-                return validationResponse(
-                    res,
-                    "Urutan harus berupa bilangan bulat minimal 0",
-                );
-            }
-            updates.sortOrder = sortOrder;
         }
 
         if (body.isActive !== undefined) {

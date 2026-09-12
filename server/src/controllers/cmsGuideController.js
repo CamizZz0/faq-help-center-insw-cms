@@ -4,6 +4,7 @@ import {
     count,
     eq,
     ilike,
+    max,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
@@ -192,34 +193,17 @@ async function validate(
         values.categoryId = null;
     }
 
+    /*
+     * Urutan ditentukan otomatis oleh sistem, sehingga
+     * sortOrder tidak lagi dibaca dari body permintaan.
+     */
     if (
-        !existing ||
+        !existing &&
         body.sortOrder !== undefined
     ) {
-        const sortOrder =
-            body.sortOrder === undefined
-                ? 0
-                : body.sortOrder;
-
-        if (
-            !["string", "number"].includes(
-                typeof sortOrder,
-            ) ||
-            String(sortOrder).trim() === "" ||
-            !Number.isInteger(
-                Number(sortOrder),
-            ) ||
-            Number(sortOrder) < 0 ||
-            Number(sortOrder) >
-                2147483647
-        ) {
-            fail(
-                "Urutan harus berupa bilangan bulat minimal 0.",
-            );
-        }
-
-        values.sortOrder =
-            Number(sortOrder);
+        fail(
+            "Urutan ditentukan otomatis oleh sistem dan tidak boleh dikirim.",
+        );
     }
 
     if (
@@ -496,6 +480,15 @@ export async function createCmsGuide(
             undefined,
             req.file,
         );
+
+        const [orderRow] = await db
+            .select({
+                maxOrder: max(guides.sortOrder),
+            })
+            .from(guides);
+
+        values.sortOrder =
+            (Number(orderRow?.maxOrder) || 0) + 1;
 
         uploadedFile =
             await uploadGuidePdf(

@@ -49,7 +49,6 @@ function EditForm({ faqId }) {
         topicId: "",
         question: "",
         answer: "",
-        sortOrder: 0,
         isPopular: false,
         isPublished: false,
     });
@@ -119,7 +118,6 @@ function EditForm({ faqId }) {
                     topicId: String(faq.topic.id),
                     question: faq.question ?? "",
                     answer: faq.answer ?? "",
-                    sortOrder: faq.sortOrder ?? 0,
                     isPopular: faq.isPopular,
                     isPublished: faq.isPublished,
                 });
@@ -217,7 +215,6 @@ function EditForm({ faqId }) {
         if (saving.current || loadingSubcategories || loadingTopics) return;
 
         const topicId = Number(form.topicId);
-        const sortOrder = Number(form.sortOrder);
 
         if (
             !form.categorySlug ||
@@ -238,15 +235,6 @@ function EditForm({ faqId }) {
             return;
         }
 
-        if (
-            String(form.sortOrder).trim() === "" ||
-            !Number.isInteger(sortOrder) ||
-            sortOrder < 0
-        ) {
-            setError("Urutan harus berupa bilangan bulat minimal 0.");
-            return;
-        }
-
         try {
             saving.current = true;
             setSubmitting(true);
@@ -259,7 +247,6 @@ function EditForm({ faqId }) {
                 // Kirim HTML langsung; backend akan melakukan sanitasi.
                 answer: form.answer,
 
-                sortOrder,
                 isPopular: form.isPopular,
                 isPublished: form.isPublished,
             });
@@ -385,20 +372,6 @@ function EditForm({ faqId }) {
                             </select>
                         </Field>
 
-                        <Field label="Urutan" htmlFor="sortOrder">
-                            <input
-                                id="sortOrder"
-                                type="number"
-                                min="0"
-                                step="1"
-                                required
-                                value={form.sortOrder}
-                                onChange={(event) =>
-                                    updateField("sortOrder", event.target.value)
-                                }
-                                className={inputClass}
-                            />
-                        </Field>
                     </div>
 
                     <Field label="Pertanyaan *" htmlFor="question">

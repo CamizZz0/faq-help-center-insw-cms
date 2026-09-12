@@ -29,7 +29,7 @@ export default function TutorialFormPage() {
 function TutorialForm({ tutorialId }) {
     const navigate = useNavigate();
     const isEdit = Boolean(tutorialId);
-    const [form, setForm] = useState({ title: "", videoUrl: "", description: "", sortOrder: 0, isPublished: false });
+    const [form, setForm] = useState({ title: "", videoUrl: "", description: "", isPublished: false });
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
     const [error, setError] = useState("");
@@ -49,7 +49,6 @@ function TutorialForm({ tutorialId }) {
                         title: tutorial.title,
                         videoUrl: tutorial.videoUrl,
                         description: tutorial.description ?? "",
-                        sortOrder: tutorial.sortOrder,
                         isPublished: tutorial.isPublished,
                     });
                 }
@@ -69,7 +68,6 @@ function TutorialForm({ tutorialId }) {
             title: form.title.trim(),
             videoUrl: form.videoUrl.trim(),
             description: form.description,
-            sortOrder: Number(form.sortOrder),
             isPublished: form.isPublished,
         };
         try {
@@ -97,10 +95,7 @@ function TutorialForm({ tutorialId }) {
                     <Field label="URL YouTube *" htmlFor="tutorial-video"><input id="tutorial-video" type="url" required value={form.videoUrl} onChange={(event) => update("videoUrl", event.target.value)} placeholder="https://www.youtube.com/watch?v=..." aria-describedby="youtube-help youtube-error" className={inputClass} /><p id="youtube-help" className="mt-2 text-sm text-slate-500">Dukung URL watch, youtu.be, embed, dan shorts.</p>{videoError && <p id="youtube-error" role="alert" className="mt-2 text-sm text-red-600">{videoError}</p>}</Field>
                     {preview && <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50"><div className="relative aspect-video max-h-80 overflow-hidden"><img src={preview.thumbnailUrl} alt="Preview thumbnail YouTube" className="h-full w-full object-cover" /><div className="absolute inset-0 flex items-center justify-center bg-black/20"><PlayCircle size={56} className="text-white drop-shadow" /></div></div><a href={`https://www.youtube.com/watch?v=${preview.id}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 p-3 text-sm font-semibold text-blue-600">Buka video di YouTube<ExternalLink size={16} /></a></div>}
                     <Field label="Deskripsi" htmlFor="tutorial-description"><textarea id="tutorial-description" rows={4} value={form.description} onChange={(event) => update("description", event.target.value)} placeholder="Tuliskan ringkasan video tutorial." className={inputClass} /></Field>
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <Field label="Urutan" htmlFor="tutorial-order"><input id="tutorial-order" type="number" required min={0} max={2147483647} step={1} value={form.sortOrder} onChange={(event) => update("sortOrder", event.target.value)} className={inputClass} /></Field>
-                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4"><input type="checkbox" checked={form.isPublished} onChange={(event) => update("isPublished", event.target.checked)} className="h-5 w-5" /><span><span className="block font-semibold text-slate-800">Terbitkan Tutorial</span><span className="text-sm text-slate-500">Tampilkan tutorial di website publik.</span></span></label>
-                    </div>
+                    <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4"><input type="checkbox" checked={form.isPublished} onChange={(event) => update("isPublished", event.target.checked)} className="h-5 w-5" /><span><span className="block font-semibold text-slate-800">Terbitkan Tutorial</span><span className="text-sm text-slate-500">Tampilkan tutorial di website publik.</span></span></label>
                     <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end"><button type="button" onClick={() => navigate("/tutorials")} className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 disabled:opacity-60">Batal</button><button type="submit" disabled={submitting || Boolean(videoError)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={19} />{submitting ? "Menyimpan..." : isEdit ? "Perbarui Tutorial" : "Simpan Tutorial"}</button></div>
                 </fieldset>
             </form>

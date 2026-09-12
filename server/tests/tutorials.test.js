@@ -51,7 +51,6 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
             title: `${token} Video`,
             description: `${token} deskripsi`,
             videoUrl: "https://youtu.be/dQw4w9WgXcQ",
-            sortOrder: 3,
             isPublished: false,
         };
         let tutorial;
@@ -128,6 +127,7 @@ test("Tutorial CMS CRUD and public integration (transaction rollback)", { timeou
                 { sortOrder: -1 }, { isPublished: "true" }, { slug: "changed" },
             ]) await request(`/cms/tutorials/${tutorial.id}`, { method: "PATCH", body, expected: 400 });
             await request("/cms/tutorials", { method: "POST", body: basePayload, expected: 409 });
+            await request("/cms/tutorials", { method: "POST", body: { ...basePayload, title: `${token} Urutan ditolak`, sortOrder: 1 }, expected: 400 });
             for (const path of ["/cms/tutorials/no-id", "/cms/tutorials/0", "/cms/tutorials?page=0", "/cms/tutorials?limit=51", "/cms/tutorials?status=other"]) await request(path, { expected: 400 });
             await request("/cms/tutorials/2147483647", { expected: 404 });
         });

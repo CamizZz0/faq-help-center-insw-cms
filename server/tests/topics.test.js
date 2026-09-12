@@ -108,7 +108,6 @@ test(
                 subcategoryId: firstSubcategory.id,
                 name: `Pendahuluan ${token}`,
                 description: `Deskripsi khusus ${token}`,
-                sortOrder: "",
                 isActive: false,
             };
             let topic;
@@ -127,7 +126,7 @@ test(
                     assert.equal(topic.slug, `pendahuluan-${token}`);
                     assert.equal(topic.subcategory.id, firstSubcategory.id);
                     assert.equal(topic.category.id, firstCategory.id);
-                    assert.equal(topic.sortOrder, 0);
+                    assert.equal(topic.sortOrder, 1);
                     assert.equal(topic.isActive, false);
                     assert.equal(topic.faqCount, 0);
                     assert.equal(
@@ -146,7 +145,6 @@ test(
                             body: {
                                 ...payload,
                                 name: `Kedua ${token}`,
-                                sortOrder: 2,
                             },
                             expected: 201,
                         })
@@ -196,7 +194,7 @@ test(
                     assert.equal(result.data.category.id, secondCategory.id);
                     assert.equal(result.data.name, `Nama baru ${token}`);
                     assert.equal(result.data.description, "Deskripsi baru");
-                    assert.equal(result.data.sortOrder, 7);
+                    assert.equal(result.data.sortOrder, topic.sortOrder);
                     assert.equal(result.data.isActive, true);
                 },
             );

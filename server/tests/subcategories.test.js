@@ -107,7 +107,6 @@ test("Subcategory CMS CRUD and public integration (transaction rollback)", { tim
             name: `Layanan ${token}`,
             description: `Deskripsi ${token}`,
             icon: "file-text",
-            sortOrder: "",
             isActive: false,
         };
         let subcategory;
@@ -121,7 +120,7 @@ test("Subcategory CMS CRUD and public integration (transaction rollback)", { tim
 
             assert.equal(subcategory.slug, `layanan-${token}`);
             assert.equal(subcategory.category.id, firstCategory.id);
-            assert.equal(subcategory.sortOrder, 0);
+            assert.equal(subcategory.sortOrder, 1);
             assert.equal(subcategory.isActive, false);
             assert.equal(subcategory.topicCount, 0);
             assert.equal(typeof subcategory.iconUrl, "string");
@@ -161,7 +160,7 @@ test("Subcategory CMS CRUD and public integration (transaction rollback)", { tim
         await t.test("list supports title search, category/status filters, and pagination", async () => {
             const second = (await request("/cms/subcategories", {
                 method: "POST",
-                form: toForm({ ...payload, name: `Layanan kedua ${token}`, sortOrder: 2 }),
+                form: toForm({ ...payload, name: `Layanan kedua ${token}` }),
                 expected: 201,
             })).data;
 
@@ -197,7 +196,7 @@ test("Subcategory CMS CRUD and public integration (transaction rollback)", { tim
             assert.equal(result.data.name, `Nama baru ${token}`);
             assert.equal(result.data.description, "Deskripsi baru");
             assert.equal(result.data.icon, "folder-tree");
-            assert.equal(result.data.sortOrder, 7);
+            assert.equal(result.data.sortOrder, subcategory.sortOrder);
             assert.equal(result.data.isActive, true);
             assert.equal(result.data.iconPath, subcategory.iconPath);
         });

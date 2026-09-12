@@ -1,4 +1,4 @@
-import { and, asc, count, eq, ilike } from "drizzle-orm";
+import { and, asc, count, eq, ilike, max } from "drizzle-orm";
 import { db } from "../config/db.js";
 import { tutorials } from "../models/schema.js";
 
@@ -84,10 +84,12 @@ async function validate(body, existing) {
     if (!existing || body.videoUrl !== undefined) Object.assign(values, parseYouTubeUrl(body.videoUrl));
     if (body.thumbnailUrl !== undefined) fail("Thumbnail tutorial dibuat otomatis dari URL YouTube.");
     if (!existing) values.durationSeconds = null;
-    if (!existing || body.sortOrder !== undefined) {
-        const order = body.sortOrder == null || body.sortOrder === "" ? 0 : body.sortOrder;
-        if (!["number", "string"].includes(typeof order) || !Number.isInteger(Number(order)) || Number(order) < 0 || Number(order) > 2147483647) fail("Urutan harus berupa bilangan bulat minimal 0.");
-        values.sortOrder = Number(order);
+    /*
+     * Urutan ditentukan otomatis oleh sistem, sehingga
+     * sortOrder tidak lagi dibaca dari body permintaan.
+     */
+    if (!existing && body.sortOrder !== undefined) {
+        fail("Urutan ditentukan otomatis oleh sistem dan tidak boleh dikirim.");
     }
     if (!existing || body.isPublished !== undefined) {
         const published = body.isPublished === undefined ? false : body.isPublished;
@@ -134,6 +136,10 @@ export async function getCmsTutorialById(req, res) {
 export async function createCmsTutorial(req, res) {
     try {
         const values = await validate(req.body);
+        const [orderRow] = await db
+            .select({ maxOrder: max(tutorials.sortOrder) })
+            .from(tutorials);
+        values.sortOrder = (Number(orderRow?.maxOrder) || 0) + 1;
         const [data] = await db.insert(tutorials).values(values).returning(fields);
         return res.status(201).json({ success: true, message: "Tutorial berhasil ditambahkan", data });
     } catch (error) { return handleError(res, error); }

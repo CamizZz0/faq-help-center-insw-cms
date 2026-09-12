@@ -396,15 +396,6 @@ export default function SubcategoryListPage() {
                                         </dd>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                        <dt className="w-24 shrink-0 text-slate-500">
-                                            Urutan
-                                        </dt>
-
-                                        <dd className="min-w-0">
-                                            {item.sortOrder}
-                                        </dd>
-                                    </div>
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
@@ -441,7 +432,7 @@ export default function SubcategoryListPage() {
                     <table
                         aria-label="Daftar subkategori"
                         aria-busy={loading}
-                        className="w-full min-w-[800px] text-left"
+                        className="w-full min-w-[700px] text-left"
                     >
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
@@ -453,9 +444,6 @@ export default function SubcategoryListPage() {
                                 </th>
                                 <th scope="col" className="px-4 py-4">
                                     Jumlah Topik
-                                </th>
-                                <th scope="col" className="px-4 py-4">
-                                    Urutan
                                 </th>
                                 <th scope="col" className="px-4 py-4">
                                     Status
@@ -473,7 +461,7 @@ export default function SubcategoryListPage() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan={6}
+                                        colSpan={5}
                                         className="px-4 py-16 text-center text-slate-500"
                                     >
                                         Memuat data subkategori...
@@ -482,7 +470,7 @@ export default function SubcategoryListPage() {
                             ) : error ? (
                                 <tr>
                                     <td
-                                        colSpan={6}
+                                        colSpan={5}
                                         className="px-4 py-16 text-center"
                                     >
                                         <p className="text-slate-500">
@@ -505,7 +493,7 @@ export default function SubcategoryListPage() {
                             ) : subcategories.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={6}
+                                        colSpan={5}
                                         className="px-4 py-16 text-center text-slate-500"
                                     >
                                         Subkategori tidak ditemukan.
@@ -544,10 +532,6 @@ export default function SubcategoryListPage() {
 
                                         <td className="px-4 py-4 text-sm text-slate-600">
                                             {item.topicCount ?? 0}
-                                        </td>
-
-                                        <td className="px-4 py-4 text-sm text-slate-600">
-                                            {item.sortOrder}
                                         </td>
 
                                         <td className="px-4 py-4">

@@ -2,9 +2,9 @@ import {
     and,
     asc,
     count,
-    desc,
     eq,
     ilike,
+    max,
     or,
 } from "drizzle-orm";
 
@@ -189,8 +189,8 @@ export async function getCmsFaqs(req, res) {
                 : dataQuery
         )
             .orderBy(
-                desc(faqs.updatedAt),
-                asc(faqs.sortOrder)
+                asc(faqs.sortOrder),
+                asc(faqs.id)
             )
             .limit(limit)
             .offset(offset);
@@ -280,11 +280,17 @@ export async function createCmsFaq(req, res) {
             answer,
             isPopular = false,
             isPublished = false,
-            sortOrder = 0,
         } = req.body;
 
+        if (req.body.sortOrder !== undefined) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Urutan ditentukan otomatis oleh sistem dan tidak boleh dikirim",
+            });
+        }
+
         const parsedTopicId = Number(topicId);
-        const parsedSortOrder = Number(sortOrder);
 
         if (
             !Number.isInteger(parsedTopicId) ||
@@ -316,17 +322,6 @@ export async function createCmsFaq(req, res) {
             return res.status(400).json({
                 success: false,
                 message: "Jawaban FAQ wajib diisi",
-            });
-        }
-
-        if (
-            !Number.isInteger(parsedSortOrder) ||
-            parsedSortOrder < 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Urutan harus berupa bilangan bulat minimal 0",
             });
         }
 
@@ -367,6 +362,14 @@ export async function createCmsFaq(req, res) {
             });
         }
 
+        const [orderRow] = await db
+            .select({ maxOrder: max(faqs.sortOrder) })
+            .from(faqs)
+            .where(eq(faqs.topicId, parsedTopicId));
+
+        const nextSortOrder =
+            (Number(orderRow?.maxOrder) || 0) + 1;
+
         const [createdFaq] = await db
             .insert(faqs)
             .values({
@@ -376,7 +379,7 @@ export async function createCmsFaq(req, res) {
                 answer: sanitizedAnswer,
                 isPopular,
                 isPublished,
-                sortOrder: parsedSortOrder,
+                sortOrder: nextSortOrder,
             })
             .returning({
                 id: faqs.id,
@@ -594,24 +597,6 @@ export async function updateCmsFaq(req, res) {
             }
 
             updates.answer = sanitizedAnswer;
-        }
-
-        if (body.sortOrder !== undefined) {
-            const sortOrder = Number(body.sortOrder);
-
-            if (
-                !["string", "number"].includes(typeof body.sortOrder) ||
-                String(body.sortOrder).trim() === "" ||
-                !Number.isInteger(sortOrder) ||
-                sortOrder < 0
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Urutan harus berupa bilangan bulat minimal 0",
-                });
-            }
-
-            updates.sortOrder = sortOrder;
         }
 
         for (const field of ["isPopular", "isPublished"]) {

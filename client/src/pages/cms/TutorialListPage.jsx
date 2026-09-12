@@ -139,7 +139,7 @@ export default function TutorialListPage() {
                                 </div>
                             </div>
 
-                            <div className="mt-3 flex items-center justify-between gap-3">
+                            <div className="mt-3 flex items-center gap-3">
                                 <span
                                     className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                                         tutorial.isPublished
@@ -150,10 +150,6 @@ export default function TutorialListPage() {
                                     {tutorial.isPublished
                                         ? "Terbit"
                                         : "Draft"}
-                                </span>
-
-                                <span className="text-sm text-slate-500">
-                                    Urutan {tutorial.sortOrder}
                                 </span>
                             </div>
 
@@ -189,8 +185,8 @@ export default function TutorialListPage() {
                 {loading ? <p className="p-8 text-center text-slate-600">Memuat data tutorial...</p>
                     : error ? <p role="alert" className="m-5 rounded-xl bg-red-50 p-4 text-red-600">{error}</p>
                     : tutorials.length === 0 ? <div className="p-10 text-center"><PlayCircle size={40} className="mx-auto text-slate-400" /><h2 className="mt-3 font-semibold text-slate-900">Tutorial belum tersedia</h2><p className="mt-1 text-sm text-slate-500">Tambahkan tutorial atau ubah filter pencarian.</p></div>
-                    : <div className="overflow-x-auto"><table className="w-full min-w-[700px] table-fixed text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="w-[58%] px-5 py-4">Tutorial</th><th className="w-[12%] px-5 py-4">Urutan</th><th className="w-[15%] px-5 py-4">Status</th><th className="w-[15%] px-5 py-4 text-right">Aksi</th></tr></thead>
-                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4">{tutorial.sortOrder}</td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
+                    : <div className="overflow-x-auto"><table className="w-full min-w-[700px] table-fixed text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="w-[70%] px-5 py-4">Tutorial</th><th className="w-[15%] px-5 py-4">Status</th><th className="w-[15%] px-5 py-4 text-right">Aksi</th></tr></thead>
+                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
             </div>
 
             {!loading && !error && meta && meta.totalPages > 1 && <div className="mt-6 flex items-center justify-between gap-4"><p className="text-sm text-slate-500">Halaman {meta.page} dari {meta.totalPages}</p><div className="flex gap-2"><button type="button" disabled={!meta.hasPreviousPage} onClick={() => setPage((value) => value - 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronLeft size={18} /></button><button type="button" disabled={!meta.hasNextPage} onClick={() => setPage((value) => value + 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronRight size={18} /></button></div></div>}

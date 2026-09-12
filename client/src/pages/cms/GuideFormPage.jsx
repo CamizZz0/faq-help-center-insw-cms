@@ -17,7 +17,7 @@ export default function GuideFormPage() {
 
 function GuideForm({ guideId }) {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ title: "", slug: "", description: "", fileUrl: "", sortOrder: 0, isPublished: false });
+    const [form, setForm] = useState({ title: "", slug: "", description: "", fileUrl: "", isPublished: false });
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState("");
     const [error, setError] = useState("");
@@ -39,7 +39,7 @@ function GuideForm({ guideId }) {
                     const guide = guideResult.data;
                     setForm({ title: guide.title, slug: guide.slug,
                         description: guide.description ?? "", fileUrl: guide.fileUrl,
-                        sortOrder: guide.sortOrder, isPublished: guide.isPublished });
+                        isPublished: guide.isPublished });
                 }
             } catch (err) {
                 if (active) setLoadError(err.message);
@@ -92,7 +92,6 @@ function GuideForm({ guideId }) {
         const payload = new FormData();
         payload.append("title", form.title.trim());
         payload.append("description", form.description);
-        payload.append("sortOrder", String(form.sortOrder));
         payload.append("isPublished", String(form.isPublished));
         if (selectedFile) payload.append("file", selectedFile);
         try {
@@ -162,15 +161,10 @@ function GuideForm({ guideId }) {
                         )}
                         {fileError && <p role="alert" className="mt-3 text-sm text-red-600">{fileError}</p>}
                     </div>
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <Field label="Urutan" htmlFor="guide-order">
-                            <input id="guide-order" type="number" required min={0} max={2147483647} step={1} value={form.sortOrder} onChange={event => update("sortOrder", event.target.value)} className={inputClass} />
-                        </Field>
-                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-                            <input type="checkbox" checked={form.isPublished} onChange={event => update("isPublished", event.target.checked)} className="h-5 w-5" />
-                            <span><span className="block font-semibold text-slate-800">Terbitkan Panduan</span><span className="text-sm text-slate-500">Tampilkan panduan di website publik.</span></span>
-                        </label>
-                    </div>
+                    <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                        <input type="checkbox" checked={form.isPublished} onChange={event => update("isPublished", event.target.checked)} className="h-5 w-5" />
+                        <span><span className="block font-semibold text-slate-800">Terbitkan Panduan</span><span className="text-sm text-slate-500">Tampilkan panduan di website publik.</span></span>
+                    </label>
                     <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
                         <button type="button" onClick={() => navigate("/guides")} className="rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-700 disabled:opacity-60">Batal</button>
                         <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={19} />{saving ? "Menyimpan..." : guideId ? "Simpan Perubahan" : "Simpan Panduan"}</button>

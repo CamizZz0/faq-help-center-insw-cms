@@ -322,15 +322,6 @@ export default function TopicListPage() {
                                         </dd>
                                     </div>
 
-                                    <div className="flex gap-2">
-                                        <dt className="w-24 shrink-0 text-slate-500">
-                                            Urutan
-                                        </dt>
-
-                                        <dd className="min-w-0">
-                                            {topic.sortOrder}
-                                        </dd>
-                                    </div>
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
@@ -366,32 +357,30 @@ export default function TopicListPage() {
                 </div>
 
                 <div className="mt-6 hidden overflow-x-auto lg:block">
-                    <table aria-label="Daftar topik" aria-busy={loading} className="w-full min-w-[1050px] text-left">
+                    <table aria-label="Daftar topik" aria-busy={loading} className="w-full min-w-[950px] text-left">
                         <thead>
                             <tr className="border-b border-slate-200 text-sm text-slate-500">
                                 <th className="px-4 py-4">Topik</th>
                                 <th className="px-4 py-4">Subkategori</th>
                                 <th className="px-4 py-4">Kategori</th>
                                 <th className="px-4 py-4">Jumlah FAQ</th>
-                                <th className="px-4 py-4">Urutan</th>
                                 <th className="px-4 py-4">Status</th>
                                 <th className="px-4 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={7} className="px-4 py-16 text-center text-slate-500">Memuat data topik...</td></tr>
+                                <tr><td colSpan={6} className="px-4 py-16 text-center text-slate-500">Memuat data topik...</td></tr>
                             ) : error ? (
-                                <tr><td colSpan={7} className="px-4 py-16 text-center"><p className="text-slate-500">Daftar topik belum dapat ditampilkan.</p><button type="button" onClick={() => setRefreshKey((current) => current + 1)} className="mt-3 font-semibold text-blue-600 hover:text-blue-800">Coba lagi</button></td></tr>
+                                <tr><td colSpan={6} className="px-4 py-16 text-center"><p className="text-slate-500">Daftar topik belum dapat ditampilkan.</p><button type="button" onClick={() => setRefreshKey((current) => current + 1)} className="mt-3 font-semibold text-blue-600 hover:text-blue-800">Coba lagi</button></td></tr>
                             ) : topics.length === 0 ? (
-                                <tr><td colSpan={7} className="px-4 py-16 text-center text-slate-500">Topik tidak ditemukan.</td></tr>
+                                <tr><td colSpan={6} className="px-4 py-16 text-center text-slate-500">Topik tidak ditemukan.</td></tr>
                             ) : topics.map((topic) => (
                                 <tr key={topic.id} className="border-b border-slate-100 last:border-none hover:bg-slate-50">
                                     <td className="max-w-md px-4 py-4"><p className="font-medium text-slate-900">{topic.name}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{topic.description || "Tidak ada deskripsi."}</p></td>
                                     <td className="px-4 py-4 text-sm text-slate-600">{topic.subcategory?.name ?? "-"}</td>
                                     <td className="px-4 py-4 text-sm text-slate-600">{topic.category?.name ?? "-"}</td>
                                     <td className="px-4 py-4 text-sm text-slate-600">{topic.faqCount ?? 0}</td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{topic.sortOrder}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${topic.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{topic.isActive ? "Aktif" : "Tidak aktif"}</span></td>
                                     <td className="px-4 py-4 text-right"><div className="flex items-center justify-end gap-2"><Link to={`/topics/${topic.id}/edit`} aria-label={`Edit ${topic.name}`} title={`Edit ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"><Pencil size={18} /></Link><button type="button" disabled={deleting} onClick={() => { setDeleteError(""); setSuccess(""); setTopicToDelete(topic); }} aria-label={`Hapus ${topic.name}`} title={`Hapus ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:opacity-50"><Trash2 size={18} /></button></div></td>
                                 </tr>
