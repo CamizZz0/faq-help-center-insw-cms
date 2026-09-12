@@ -21,10 +21,13 @@ async function request(endpoint, options = {}) {
     const result = await response.json();
 
     if (!response.ok) {
-        throw new Error(
+        const error = new Error(
             result.message ??
             "Terjadi kesalahan saat mengambil data"
         );
+        error.data = result.data;
+        error.status = response.status;
+        throw error;
     }
 
     return result;
@@ -136,6 +139,44 @@ export function updateCmsCategory(id, payload) {
 export function deleteCmsCategory(id) {
     return request(
         `/cms/categories/${encodeURIComponent(id)}`,
+        {
+            method: "DELETE",
+        }
+    );
+}
+
+export function getCmsSubcategories(params = {}) {
+    return request(
+        `/cms/subcategories${createQuery(params)}`
+    );
+}
+
+export function getCmsSubcategoryById(id) {
+    return request(
+        `/cms/subcategories/${encodeURIComponent(id)}`
+    );
+}
+
+export function createCmsSubcategory(payload) {
+    return request("/cms/subcategories", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+}
+
+export function updateCmsSubcategory(id, payload) {
+    return request(
+        `/cms/subcategories/${encodeURIComponent(id)}`,
+        {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+        }
+    );
+}
+
+export function deleteCmsSubcategory(id) {
+    return request(
+        `/cms/subcategories/${encodeURIComponent(id)}`,
         {
             method: "DELETE",
         }

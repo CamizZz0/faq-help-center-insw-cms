@@ -9,6 +9,8 @@ import FaqListPage from "./pages/cms/FaqListPage";
 import PlaceholderPage from "./pages/cms/PlaceholderPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
 import CategoryPage from "./pages/cms/CategoryPage";
+import SubcategoryListPage from "./pages/cms/SubcategoryListPage";
+import SubcategoryFormPage from "./pages/cms/SubcategoryFormPage";
 import GuideListPage from "./pages/cms/GuideListPage";
 import GuideFormPage from "./pages/cms/GuideFormPage";
 import TutorialListPage from "./pages/cms/TutorialListPage";
@@ -30,7 +32,17 @@ export default function App() {
 
         <Route
           path="subcategories"
-          element={<PlaceholderPage title="Kelola Subkategori" />}
+          element={<SubcategoryListPage />}
+        />
+
+        <Route
+          path="subcategories/new"
+          element={<SubcategoryFormPage />}
+        />
+
+        <Route
+          path="subcategories/:subcategoryId/edit"
+          element={<SubcategoryFormPage />}
         />
 
         <Route
