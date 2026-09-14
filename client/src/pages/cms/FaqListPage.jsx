@@ -22,7 +22,7 @@ import {
 } from "../../services/api";
 
 import DeleteFaqModal from "../../components/cms/DeleteFaqModal";
-import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import PopularButton from "../../components/cms/PopularButton";
 import VisibilityButton from "../../components/cms/VisibilityButton";
 
 function extractCategories(result) {
@@ -93,14 +93,14 @@ export default function FaqListPage() {
     const [faqToDelete, setFaqToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
-    const [faqToChangeStatus, setFaqToChangeStatus] = useState(null);
     const [changingStatusId, setChangingStatusId] = useState(null);
-    const [statusError, setStatusError] = useState("");
     const [success, setSuccess] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
+    const [popularId, setPopularId] = useState(null);
 
     const deleteInProgress = useRef(false);
     const statusChangingRef = useRef(false);
+    const popularChangingRef = useRef(false);
 
     const updateFilterParameters = useCallback((changes) => {
         const nextParams = new URLSearchParams(searchParams);
@@ -353,7 +353,6 @@ export default function FaqListPage() {
             statusChangingRef.current = true;
             setChangingStatusId(faq.id);
             setActionError("");
-            setStatusError("");
             const result = await updateCmsFaq(faq.id, { isPublished });
             const updatedFaq = result?.data ?? { ...faq, isPublished };
             setFaqs((current) =>
@@ -362,10 +361,8 @@ export default function FaqListPage() {
                 )
             );
             setSuccess(result?.message ?? "Status FAQ berhasil diperbarui.");
-            setFaqToChangeStatus(null);
         } catch (err) {
             const message = err.message || "Gagal memperbarui status FAQ.";
-            setStatusError(message);
             setActionError(message);
         } finally {
             statusChangingRef.current = false;
@@ -374,14 +371,46 @@ export default function FaqListPage() {
     }
 
     function handleStatusRequest(faq) {
+        if (!faq) return;
+
         setSuccess("");
         setActionError("");
-        setStatusError("");
-        if (faq.isPublished) {
-            setFaqToChangeStatus(faq);
-            return;
+        saveStatus(faq, !faq.isPublished);
+    }
+
+    async function togglePopular(faq) {
+        if (!faq || popularChangingRef.current) return;
+
+        try {
+            popularChangingRef.current = true;
+            setPopularId(faq.id);
+            setActionError("");
+            const result = await updateCmsFaq(faq.id, {
+                isPopular: !faq.isPopular,
+            });
+            const updatedFaq =
+                result?.data ?? { ...faq, isPopular: !faq.isPopular };
+            setFaqs((current) =>
+                current.map((item) =>
+                    item.id === faq.id
+                        ? { ...item, ...updatedFaq }
+                        : item
+                )
+            );
+            setSuccess(
+                updatedFaq.isPopular
+                    ? "FAQ ditandai sebagai populer."
+                    : "FAQ tidak lagi populer."
+            );
+        } catch (err) {
+            const message =
+                err.message || "Gagal memperbarui status populer.";
+
+            setActionError(message);
+        } finally {
+            popularChangingRef.current = false;
+            setPopularId(null);
         }
-        saveStatus(faq, true);
     }
 
     function clearTopicFilter() {
@@ -575,12 +604,6 @@ export default function FaqListPage() {
                                     </span>
                                 </div>
 
-                                {faq.isPopular && (
-                                    <span className="mt-2 inline-block text-xs font-medium text-amber-600">
-                                        FAQ Populer
-                                    </span>
-                                )}
-
                                 <dl className="mt-3 space-y-1 text-sm text-slate-600">
                                     <div className="flex gap-2">
                                         <dt className="w-20 shrink-0 text-slate-500">
@@ -604,6 +627,12 @@ export default function FaqListPage() {
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
+                                    <PopularButton
+                                        isPopular={faq.isPopular}
+                                        loading={popularId === faq.id}
+                                        onClick={() => togglePopular(faq)}
+                                        className="flex-1"
+                                    />
                                     <VisibilityButton
                                         isVisible={faq.isPublished}
                                         disableLabel="Jadikan FAQ sebagai draf"
@@ -720,12 +749,6 @@ export default function FaqListPage() {
                                             <p className="line-clamp-2 font-medium text-slate-900">
                                                 {faq.question}
                                             </p>
-
-                                            {faq.isPopular && (
-                                                <span className="mt-2 inline-block text-xs font-medium text-amber-600">
-                                                    FAQ Populer
-                                                </span>
-                                            )}
                                         </td>
 
                                         <td className="px-4 py-4 text-sm text-slate-600">
@@ -751,6 +774,11 @@ export default function FaqListPage() {
 
                                         <td className="px-4 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <PopularButton
+                                                    isPopular={faq.isPopular}
+                                                    loading={popularId === faq.id}
+                                                    onClick={() => togglePopular(faq)}
+                                                />
                                                 <VisibilityButton
                                                     isVisible={faq.isPublished}
                                                     disableLabel="Jadikan FAQ sebagai draf"
@@ -831,20 +859,6 @@ export default function FaqListPage() {
                 error={deleteError}
                 onCancel={handleCancelDelete}
                 onConfirm={handleConfirmDelete}
-            />
-            <StatusConfirmModal
-                item={faqToChangeStatus}
-                message="Jadikan FAQ sebagai draf? FAQ tidak akan tampil di halaman publik."
-                confirmLabel="Jadikan draf"
-                saving={changingStatusId === faqToChangeStatus?.id}
-                error={statusError}
-                onCancel={() => {
-                    if (!statusChangingRef.current) {
-                        setFaqToChangeStatus(null);
-                        setStatusError("");
-                    }
-                }}
-                onConfirm={() => saveStatus(faqToChangeStatus, false)}
             />
         </section>
     );

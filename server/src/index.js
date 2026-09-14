@@ -26,12 +26,25 @@ const app = express();
 
 const PORT = process.env.PORT || 5001;
 
+const clientOrigins = [
+    process.env.CLIENT_URL,
+    process.env.CLIENT_URL_CMS,
+    ...(process.env.CLIENT_URLS
+        ? process.env.CLIENT_URLS.split(",")
+        : []),
+]
+    .map((origin) => (origin ?? "").trim())
+    .filter(Boolean);
+
+if (clientOrigins.length === 0) {
+    console.warn(
+        "CORS: CLIENT_URL / CLIENT_URL_CMS belum diatur; request lintas origin akan ditolak",
+    );
+}
+
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173",
-            "http://localhost:5174",
-        ],
+        origin: clientOrigins,
 
         methods: [
             "GET",

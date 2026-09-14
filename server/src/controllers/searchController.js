@@ -1,6 +1,7 @@
 import {
     and,
     asc,
+    count,
     eq,
     ilike,
 } from "drizzle-orm";
@@ -151,38 +152,13 @@ export async function searchHelpCenter(req, res) {
 
     try {
         const [
-            faqData,
-            guideData,
-            tutorialData,
+            faqCountResult,
+            guideCountResult,
+            tutorialCountResult,
         ] = await Promise.all([
             db
                 .select({
-                    id: faqs.id,
-                    question: faqs.question,
-                    answer: faqs.answer,
-                    isPopular:
-                        faqs.isPopular,
-
-                    category: {
-                        name:
-                            categories.name,
-                        slug:
-                            categories.slug,
-                    },
-
-                    subcategory: {
-                        name:
-                            subcategories.name,
-                        slug:
-                            subcategories.slug,
-                    },
-
-                    topic: {
-                        name:
-                            faqTopics.name,
-                        slug:
-                            faqTopics.slug,
-                    },
+                    total: count(),
                 })
                 .from(faqs)
                 .innerJoin(
@@ -206,60 +182,213 @@ export async function searchHelpCenter(req, res) {
                         categories.id,
                     ),
                 )
-                .where(faqFilter)
-                .orderBy(
-                    asc(
-                        categories.sortOrder,
-                    ),
-                    asc(
-                        subcategories.sortOrder,
-                    ),
-                    asc(
-                        faqTopics.sortOrder,
-                    ),
-                    asc(faqs.sortOrder),
-                    asc(faqs.id),
-                ),
+                .where(faqFilter),
 
             db
                 .select({
-                    id: guides.id,
-                    title: guides.title,
-                    slug: guides.slug,
-                    description:
-                        guides.description,
-                    fileUrl:
-                        guides.fileUrl,
+                    total: count(),
                 })
                 .from(guides)
-                .where(guideFilter)
-                .orderBy(
-                    asc(guides.sortOrder),
-                    asc(guides.id),
-                ),
+                .where(guideFilter),
 
             db
                 .select({
-                    id: tutorials.id,
-                    title:
-                        tutorials.title,
-                    slug:
-                        tutorials.slug,
-                    description:
-                        tutorials.description,
-                    videoUrl:
-                        tutorials.videoUrl,
-                    thumbnailUrl:
-                        tutorials.thumbnailUrl,
+                    total: count(),
                 })
                 .from(tutorials)
-                .where(tutorialFilter)
-                .orderBy(
-                    asc(
-                        tutorials.sortOrder,
-                    ),
-                    asc(tutorials.id),
-                ),
+                .where(tutorialFilter),
+        ]);
+
+        const faqCount = Number(
+            faqCountResult[0]?.total ?? 0,
+        );
+
+        const guideCount = Number(
+            guideCountResult[0]?.total ?? 0,
+        );
+
+        const tutorialCount = Number(
+            tutorialCountResult[0]?.total ?? 0,
+        );
+
+        const totalItems =
+            faqCount +
+            guideCount +
+            tutorialCount;
+
+        const totalPages =
+            Math.ceil(
+                totalItems / limit,
+            );
+
+        const windowStart = offset;
+        const windowEnd = offset + limit;
+
+        function pickSlice(start, size) {
+            const lo = Math.max(
+                start,
+                windowStart,
+            );
+
+            const hi = Math.min(
+                start + size,
+                windowEnd,
+            );
+
+            if (lo >= hi) {
+                return null;
+            }
+
+            return {
+                offset: lo - start,
+                limit: hi - lo,
+            };
+        }
+
+        const faqSlice = pickSlice(
+            0,
+            faqCount,
+        );
+
+        const guideSlice = pickSlice(
+            faqCount,
+            guideCount,
+        );
+
+        const tutorialSlice = pickSlice(
+            faqCount + guideCount,
+            tutorialCount,
+        );
+
+        const [
+            faqData,
+            guideData,
+            tutorialData,
+        ] = await Promise.all([
+            faqSlice
+                ? db
+                      .select({
+                          id: faqs.id,
+                          question:
+                              faqs.question,
+                          answer: faqs.answer,
+                          isPopular:
+                              faqs.isPopular,
+
+                          category: {
+                              name: categories.name,
+                              slug: categories.slug,
+                          },
+
+                          subcategory: {
+                              name: subcategories.name,
+                              slug: subcategories.slug,
+                          },
+
+                          topic: {
+                              name: faqTopics.name,
+                              slug: faqTopics.slug,
+                          },
+                      })
+                      .from(faqs)
+                      .innerJoin(
+                          faqTopics,
+                          eq(
+                              faqs.topicId,
+                              faqTopics.id,
+                          ),
+                      )
+                      .innerJoin(
+                          subcategories,
+                          eq(
+                              faqTopics.subcategoryId,
+                              subcategories.id,
+                          ),
+                      )
+                      .innerJoin(
+                          categories,
+                          eq(
+                              subcategories.categoryId,
+                              categories.id,
+                          ),
+                      )
+                      .where(faqFilter)
+                      .orderBy(
+                          asc(
+                              categories.sortOrder,
+                          ),
+                          asc(
+                              subcategories.sortOrder,
+                          ),
+                          asc(
+                              faqTopics.sortOrder,
+                          ),
+                          asc(faqs.sortOrder),
+                          asc(faqs.id),
+                      )
+                      .limit(faqSlice.limit)
+                      .offset(faqSlice.offset)
+                : [],
+
+            guideSlice
+                ? db
+                      .select({
+                          id: guides.id,
+                          title: guides.title,
+                          slug: guides.slug,
+                          description:
+                              guides.description,
+                          fileUrl:
+                              guides.fileUrl,
+                      })
+                      .from(guides)
+                      .where(guideFilter)
+                      .orderBy(
+                          asc(
+                              guides.sortOrder,
+                          ),
+                          asc(guides.id),
+                      )
+                      .limit(
+                          guideSlice.limit,
+                      )
+                      .offset(
+                          guideSlice.offset,
+                      )
+                : [],
+
+            tutorialSlice
+                ? db
+                      .select({
+                          id: tutorials.id,
+                          title:
+                              tutorials.title,
+                          slug:
+                              tutorials.slug,
+                          description:
+                              tutorials.description,
+                          videoUrl:
+                              tutorials.videoUrl,
+                          thumbnailUrl:
+                              tutorials.thumbnailUrl,
+                      })
+                      .from(tutorials)
+                      .where(
+                          tutorialFilter,
+                      )
+                      .orderBy(
+                          asc(
+                              tutorials.sortOrder,
+                          ),
+                          asc(tutorials.id),
+                      )
+                      .limit(
+                          tutorialSlice.limit,
+                      )
+                      .offset(
+                          tutorialSlice.offset,
+                      )
+                : [],
         ]);
 
         /*
@@ -276,9 +405,10 @@ export async function searchHelpCenter(req, res) {
 
         /*
          * Menggabungkan FAQ, Panduan, dan Tutorial
-         * ke dalam satu daftar hasil pencarian.
+         * sesuai urutan blok masing-masing untuk
+         * halaman yang diminta.
          */
-        const allResults = [
+        const pageResults = [
             ...faqData.map((item) => ({
                 ...item,
                 resultType: "faq",
@@ -301,30 +431,10 @@ export async function searchHelpCenter(req, res) {
         ];
 
         const counts = {
-            faqs: faqData.length,
-            guides:
-                normalizedGuides.length,
-            tutorials:
-                tutorialData.length,
+            faqs: faqCount,
+            guides: guideCount,
+            tutorials: tutorialCount,
         };
-
-        const totalItems =
-            allResults.length;
-
-        const totalPages =
-            Math.ceil(
-                totalItems / limit,
-            );
-
-        /*
-         * Pagination diterapkan setelah seluruh
-         * jenis konten digabungkan.
-         */
-        const pageResults =
-            allResults.slice(
-                offset,
-                offset + limit,
-            );
 
         return res.status(200).json({
             success: true,
