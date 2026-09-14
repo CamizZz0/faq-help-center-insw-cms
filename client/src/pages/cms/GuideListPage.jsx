@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, FileText, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { deleteCmsGuide, getCmsGuides } from "../../services/api";
+import { deleteCmsGuide, getCmsGuides, updateCmsGuide } from "../../services/api";
 import DeleteGuideModal from "../../components/cms/DeleteGuideModal";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 
 export default function GuideListPage() {
     const location = useLocation();
@@ -15,11 +17,16 @@ export default function GuideListPage() {
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
     const [guideToDelete, setGuideToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
+    const [guideToChangeStatus, setGuideToChangeStatus] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
     const deletingRef = useRef(false);
+    const statusChangingRef = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -67,6 +74,43 @@ export default function GuideListPage() {
         }
     }
 
+    async function saveStatus(guide, isPublished) {
+        if (!guide || statusChangingRef.current) return;
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(guide.id);
+            setActionError("");
+            setStatusError("");
+            const payload = new FormData();
+            payload.set("isPublished", String(isPublished));
+            const result = await updateCmsGuide(guide.id, payload);
+            const updatedGuide = result?.data ?? { ...guide, isPublished };
+            setGuides((current) => current.map((item) =>
+                item.id === guide.id ? { ...item, ...updatedGuide } : item
+            ));
+            setSuccess(result?.message ?? "Status panduan berhasil diperbarui.");
+            setGuideToChangeStatus(null);
+        } catch (err) {
+            const message = err.message || "Gagal memperbarui status panduan.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(guide) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (guide.isPublished) {
+            setGuideToChangeStatus(guide);
+            return;
+        }
+        saveStatus(guide, true);
+    }
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -96,6 +140,7 @@ export default function GuideListPage() {
 
                 {success && <p role="status" className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">{success}</p>}
                 {error && <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</p>}
+                {actionError && <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{actionError}</p>}
 
                 <div className="mt-6 space-y-3 lg:hidden">
                     {loading ? (
@@ -161,6 +206,14 @@ export default function GuideListPage() {
                                 </div>
 
                                 <div className="mt-4 flex gap-2">
+                                    <VisibilityButton
+                                        isVisible={guide.isPublished}
+                                        disableLabel="Jadikan panduan sebagai draf"
+                                        enableLabel="Terbitkan panduan"
+                                        loading={changingStatusId === guide.id}
+                                        onClick={() => handleStatusRequest(guide)}
+                                        className="flex-1"
+                                    />
                                     <Link
                                         to={"/guides/" + guide.id + "/edit"}
                                         aria-label={`Edit ${guide.title}`}
@@ -219,6 +272,13 @@ export default function GuideListPage() {
                                     </td>
                                     <td className="px-4 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <VisibilityButton
+                                                isVisible={guide.isPublished}
+                                                disableLabel="Jadikan panduan sebagai draf"
+                                                enableLabel="Terbitkan panduan"
+                                                loading={changingStatusId === guide.id}
+                                                onClick={() => handleStatusRequest(guide)}
+                                            />
                                             <Link to={"/guides/" + guide.id + "/edit"} aria-label={"Edit " + guide.title} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600">
                                                 <Pencil size={18} />
                                             </Link>
@@ -248,6 +308,20 @@ export default function GuideListPage() {
                 )}
             </div>
             <DeleteGuideModal guide={guideToDelete} deleting={deleting} error={deleteError} onCancel={cancelDelete} onConfirm={confirmDelete} />
+            <StatusConfirmModal
+                item={guideToChangeStatus}
+                message="Jadikan panduan sebagai draf? Panduan tidak akan tampil di halaman publik."
+                confirmLabel="Jadikan draf"
+                saving={changingStatusId === guideToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setGuideToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(guideToChangeStatus, false)}
+            />
         </section>
     );
 }

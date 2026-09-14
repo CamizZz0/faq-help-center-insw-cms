@@ -15,10 +15,13 @@ import {
     deleteCmsSubcategory,
     getCmsCategories,
     getCmsSubcategories,
+    updateCmsSubcategory,
 } from "../../services/api";
 
 import DeleteSubcategoryModal from "../../components/cms/DeleteSubcategoryModal";
 import IconPreview from "../../components/cms/IconPreview";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 
 function extractCategories(result) {
     if (Array.isArray(result?.data)) {
@@ -58,6 +61,7 @@ export default function SubcategoryListPage() {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [categoryError, setCategoryError] = useState("");
 
     const [subcategoryToDelete, setSubcategoryToDelete] = useState(null);
@@ -65,8 +69,12 @@ export default function SubcategoryListPage() {
     const [deleteError, setDeleteError] = useState("");
     const [success, setSuccess] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
+    const [subcategoryToChangeStatus, setSubcategoryToChangeStatus] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
 
     const deleteInProgress = useRef(false);
+    const statusChangingRef = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -205,6 +213,48 @@ export default function SubcategoryListPage() {
         }
     }
 
+    async function saveStatus(subcategory, isActive) {
+        if (!subcategory || statusChangingRef.current) return;
+
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(subcategory.id);
+            setActionError("");
+            setStatusError("");
+            const payload = new FormData();
+            payload.set("isActive", String(isActive));
+            const result = await updateCmsSubcategory(subcategory.id, payload);
+            const updatedSubcategory = result?.data ?? { ...subcategory, isActive };
+            setSubcategories((current) =>
+                current.map((item) =>
+                    item.id === subcategory.id
+                        ? { ...item, ...updatedSubcategory }
+                        : item
+                )
+            );
+            setSuccess(result?.message ?? "Status subkategori berhasil diperbarui.");
+            setSubcategoryToChangeStatus(null);
+        } catch (err) {
+            const message = err.message || "Gagal memperbarui status subkategori.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(subcategory) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (subcategory.isActive) {
+            setSubcategoryToChangeStatus(subcategory);
+            return;
+        }
+        saveStatus(subcategory, true);
+    }
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -308,6 +358,15 @@ export default function SubcategoryListPage() {
                     </div>
                 )}
 
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600"
+                    >
+                        {actionError}
+                    </div>
+                )}
+
                 <div className="mt-6 space-y-3 lg:hidden">
                     {loading ? (
                         <p className="rounded-2xl border border-slate-200 bg-white px-4 py-16 text-center text-slate-500">
@@ -399,6 +458,14 @@ export default function SubcategoryListPage() {
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
+                                    <VisibilityButton
+                                        isVisible={item.isActive}
+                                        disableLabel="Nonaktifkan subkategori"
+                                        enableLabel="Aktifkan subkategori"
+                                        loading={changingStatusId === item.id}
+                                        onClick={() => handleStatusRequest(item)}
+                                        className="flex-1"
+                                    />
                                     <Link
                                         to={`/subcategories/${item.id}/edit`}
                                         aria-label={`Edit ${item.name}`}
@@ -550,6 +617,13 @@ export default function SubcategoryListPage() {
 
                                         <td className="px-4 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <VisibilityButton
+                                                    isVisible={item.isActive}
+                                                    disableLabel="Nonaktifkan subkategori"
+                                                    enableLabel="Aktifkan subkategori"
+                                                    loading={changingStatusId === item.id}
+                                                    onClick={() => handleStatusRequest(item)}
+                                                />
                                                 <Link
                                                     to={`/subcategories/${item.id}/edit`}
                                                     aria-label={`Edit ${item.name}`}
@@ -633,6 +707,20 @@ export default function SubcategoryListPage() {
                 error={deleteError}
                 onCancel={handleCancelDelete}
                 onConfirm={handleConfirmDelete}
+            />
+            <StatusConfirmModal
+                item={subcategoryToChangeStatus}
+                message="Nonaktifkan subkategori? Topik dan FAQ di dalamnya tidak akan tampil di halaman publik."
+                confirmLabel="Nonaktifkan subkategori"
+                saving={changingStatusId === subcategoryToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setSubcategoryToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(subcategoryToChangeStatus, false)}
             />
         </section>
     );

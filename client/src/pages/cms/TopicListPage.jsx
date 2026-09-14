@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
+    ChevronUp,
     Pencil,
     Plus,
     Search,
@@ -9,11 +11,15 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DeleteTopicModal from "../../components/cms/DeleteTopicModal";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 import {
     deleteCmsTopic,
     getCmsCategories,
     getCmsSubcategories,
+    getCmsTopicFaqs,
     getCmsTopics,
+    updateCmsTopic,
 } from "../../services/api";
 
 function extractList(result) {
@@ -31,6 +37,79 @@ function formatDeleteError(error) {
     return error.message || "Gagal menghapus topik.";
 }
 
+function TopicFaqPanel({ topic, faqs, loading, error, onRetry }) {
+    return (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 className="font-semibold text-slate-900">
+                        Daftar FAQ — {topic.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                        {topic.faqCount ?? 0} pertanyaan
+                    </p>
+                </div>
+                <Link
+                    to={`/faqs?topic=${encodeURIComponent(topic.id)}`}
+                    className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+                >
+                    Kelola semua FAQ →
+                </Link>
+            </div>
+
+            {loading ? (
+                <p className="mt-4 text-sm text-slate-600">Memuat daftar FAQ...</p>
+            ) : error ? (
+                <div className="mt-4 rounded-lg bg-white p-3 text-sm text-red-700">
+                    <p>{error}</p>
+                    <button
+                        type="button"
+                        onClick={onRetry}
+                        className="mt-2 font-semibold text-blue-700 hover:underline"
+                    >
+                        Coba lagi
+                    </button>
+                </div>
+            ) : faqs.length === 0 ? (
+                <p className="mt-4 rounded-lg bg-white p-3 text-sm text-slate-600">
+                    Belum ada FAQ dalam topik ini
+                </p>
+            ) : (
+                <ul className="mt-4 overflow-hidden rounded-lg border border-blue-100 bg-white">
+                    {faqs.map((faq) => (
+                        <li
+                            key={faq.id}
+                            className="flex flex-col gap-3 border-b border-slate-100 px-3 py-3 last:border-none sm:flex-row sm:items-center sm:justify-between"
+                        >
+                            <div className="flex min-w-0 items-start gap-2">
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
+                                <p className="min-w-0 text-sm text-slate-700">{faq.question}</p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
+                                <span
+                                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                        faq.isPublished
+                                            ? "bg-emerald-100 text-emerald-700"
+                                            : "bg-amber-100 text-amber-700"
+                                    }`}
+                                >
+                                    {faq.isPublished ? "Terbit" : "Draf"}
+                                </span>
+                                <Link
+                                    to={`/faqs/${faq.id}/edit`}
+                                    className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+                                >
+                                    Edit FAQ
+                                </Link>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
+
 export default function TopicListPage() {
     const [topics, setTopics] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -45,13 +124,22 @@ export default function TopicListPage() {
     const [loading, setLoading] = useState(true);
     const [loadingSubcategories, setLoadingSubcategories] = useState(true);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [filterError, setFilterError] = useState("");
     const [topicToDelete, setTopicToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
     const [success, setSuccess] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
+    const [expandedTopicId, setExpandedTopicId] = useState(null);
+    const [topicFaqs, setTopicFaqs] = useState({});
+    const [topicFaqLoading, setTopicFaqLoading] = useState({});
+    const [topicFaqError, setTopicFaqError] = useState({});
+    const [topicToChangeStatus, setTopicToChangeStatus] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
     const deleteInProgress = useRef(false);
+    const statusChangingRef = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -159,6 +247,75 @@ export default function TopicListPage() {
         }
     }
 
+    async function loadTopicFaqs(topicId) {
+        try {
+            setTopicFaqLoading((current) => ({ ...current, [topicId]: true }));
+            setTopicFaqError((current) => ({ ...current, [topicId]: "" }));
+            const result = await getCmsTopicFaqs(topicId);
+            setTopicFaqs((current) => ({
+                ...current,
+                [topicId]: Array.isArray(result?.data?.faqs) ? result.data.faqs : [],
+            }));
+        } catch (requestError) {
+            setTopicFaqError((current) => ({
+                ...current,
+                [topicId]: requestError.message || "Gagal mengambil daftar FAQ.",
+            }));
+        } finally {
+            setTopicFaqLoading((current) => ({ ...current, [topicId]: false }));
+        }
+    }
+
+    function handleToggleTopicFaqs(topic) {
+        if (expandedTopicId === topic.id) {
+            setExpandedTopicId(null);
+            return;
+        }
+
+        setExpandedTopicId(topic.id);
+        if (topicFaqs[topic.id] === undefined && !topicFaqLoading[topic.id]) {
+            loadTopicFaqs(topic.id);
+        }
+    }
+
+    async function saveStatus(topic, isActive) {
+        if (!topic || statusChangingRef.current) return;
+
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(topic.id);
+            setActionError("");
+            setStatusError("");
+            const result = await updateCmsTopic(topic.id, { isActive });
+            const updatedTopic = result?.data ?? { ...topic, isActive };
+            setTopics((current) =>
+                current.map((item) =>
+                    item.id === topic.id ? { ...item, ...updatedTopic } : item
+                )
+            );
+            setSuccess(result?.message ?? "Status topik berhasil diperbarui.");
+            setTopicToChangeStatus(null);
+        } catch (requestError) {
+            const message = requestError.message || "Gagal memperbarui status topik.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(topic) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (topic.isActive) {
+            setTopicToChangeStatus(topic);
+            return;
+        }
+        saveStatus(topic, true);
+    }
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -234,6 +391,7 @@ export default function TopicListPage() {
                 {success && <div role="status" className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">{success}</div>}
                 {filterError && <div role="alert" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">Filter tidak dapat dimuat: {filterError}</div>}
                 {error && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{error}</div>}
+                {actionError && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">{actionError}</div>}
 
                 <div className="mt-6 space-y-3 lg:hidden">
                     {loading ? (
@@ -318,13 +476,31 @@ export default function TopicListPage() {
                                         </dt>
 
                                         <dd className="min-w-0">
-                                            {topic.faqCount ?? 0}
+                                            <button
+                                                type="button"
+                                                aria-expanded={expandedTopicId === topic.id}
+                                                onClick={() => handleToggleTopicFaqs(topic)}
+                                                className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+                                            >
+                                                {topic.faqCount ?? 0} FAQ
+                                                {expandedTopicId === topic.id
+                                                    ? <ChevronUp size={16} aria-hidden="true" />
+                                                    : <ChevronDown size={16} aria-hidden="true" />}
+                                            </button>
                                         </dd>
                                     </div>
 
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
+                                    <VisibilityButton
+                                        isVisible={topic.isActive}
+                                        disableLabel="Nonaktifkan topik"
+                                        enableLabel="Aktifkan topik"
+                                        loading={changingStatusId === topic.id}
+                                        onClick={() => handleStatusRequest(topic)}
+                                        className="flex-1"
+                                    />
                                     <Link
                                         to={`/topics/${topic.id}/edit`}
                                         aria-label={`Edit ${topic.name}`}
@@ -351,6 +527,17 @@ export default function TopicListPage() {
                                         Hapus
                                     </button>
                                 </div>
+                                {expandedTopicId === topic.id && (
+                                    <div className="mt-4">
+                                        <TopicFaqPanel
+                                            topic={topic}
+                                            faqs={topicFaqs[topic.id] ?? []}
+                                            loading={Boolean(topicFaqLoading[topic.id])}
+                                            error={topicFaqError[topic.id]}
+                                            onRetry={() => loadTopicFaqs(topic.id)}
+                                        />
+                                    </div>
+                                )}
                             </article>
                         ))
                     )}
@@ -363,7 +550,7 @@ export default function TopicListPage() {
                                 <th className="px-4 py-4">Topik</th>
                                 <th className="px-4 py-4">Subkategori</th>
                                 <th className="px-4 py-4">Kategori</th>
-                                <th className="px-4 py-4">Jumlah FAQ</th>
+                                <th className="px-4 py-4">Daftar FAQ</th>
                                 <th className="px-4 py-4">Status</th>
                                 <th className="px-4 py-4 text-right">Aksi</th>
                             </tr>
@@ -376,14 +563,23 @@ export default function TopicListPage() {
                             ) : topics.length === 0 ? (
                                 <tr><td colSpan={6} className="px-4 py-16 text-center text-slate-500">Topik tidak ditemukan.</td></tr>
                             ) : topics.map((topic) => (
-                                <tr key={topic.id} className="border-b border-slate-100 last:border-none hover:bg-slate-50">
-                                    <td className="max-w-md px-4 py-4"><p className="font-medium text-slate-900">{topic.name}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{topic.description || "Tidak ada deskripsi."}</p></td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{topic.subcategory?.name ?? "-"}</td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{topic.category?.name ?? "-"}</td>
-                                    <td className="px-4 py-4 text-sm text-slate-600">{topic.faqCount ?? 0}</td>
-                                    <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${topic.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{topic.isActive ? "Aktif" : "Tidak aktif"}</span></td>
-                                    <td className="px-4 py-4 text-right"><div className="flex items-center justify-end gap-2"><Link to={`/topics/${topic.id}/edit`} aria-label={`Edit ${topic.name}`} title={`Edit ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"><Pencil size={18} /></Link><button type="button" disabled={deleting} onClick={() => { setDeleteError(""); setSuccess(""); setTopicToDelete(topic); }} aria-label={`Hapus ${topic.name}`} title={`Hapus ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:opacity-50"><Trash2 size={18} /></button></div></td>
-                                </tr>
+                                <Fragment key={topic.id}>
+                                    <tr className="border-b border-slate-100 last:border-none hover:bg-slate-50">
+                                        <td className="max-w-md px-4 py-4"><p className="font-medium text-slate-900">{topic.name}</p><p className="mt-1 line-clamp-2 text-sm text-slate-500">{topic.description || "Tidak ada deskripsi."}</p></td>
+                                        <td className="px-4 py-4 text-sm text-slate-600">{topic.subcategory?.name ?? "-"}</td>
+                                        <td className="px-4 py-4 text-sm text-slate-600">{topic.category?.name ?? "-"}</td>
+                                        <td className="px-4 py-4 text-sm text-slate-600"><button type="button" aria-expanded={expandedTopicId === topic.id} onClick={() => handleToggleTopicFaqs(topic)} className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900">{topic.faqCount ?? 0} FAQ {expandedTopicId === topic.id ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}</button></td>
+                                        <td className="px-4 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${topic.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{topic.isActive ? "Aktif" : "Tidak aktif"}</span></td>
+                                        <td className="px-4 py-4 text-right"><div className="flex items-center justify-end gap-2"><VisibilityButton isVisible={topic.isActive} disableLabel="Nonaktifkan topik" enableLabel="Aktifkan topik" loading={changingStatusId === topic.id} onClick={() => handleStatusRequest(topic)} /><Link to={`/topics/${topic.id}/edit`} aria-label={`Edit ${topic.name}`} title={`Edit ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"><Pencil size={18} /></Link><button type="button" disabled={deleting} onClick={() => { setDeleteError(""); setSuccess(""); setTopicToDelete(topic); }} aria-label={`Hapus ${topic.name}`} title={`Hapus ${topic.name}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:border-red-400 hover:bg-red-50 disabled:opacity-50"><Trash2 size={18} /></button></div></td>
+                                    </tr>
+                                    {expandedTopicId === topic.id && (
+                                        <tr className="border-b border-slate-100">
+                                            <td colSpan={6} className="px-4 pb-4 pt-0">
+                                                <TopicFaqPanel topic={topic} faqs={topicFaqs[topic.id] ?? []} loading={Boolean(topicFaqLoading[topic.id])} error={topicFaqError[topic.id]} onRetry={() => loadTopicFaqs(topic.id)} />
+                                            </td>
+                                        </tr>
+                                    )}
+                                </Fragment>
                             ))}
                         </tbody>
                     </table>
@@ -407,6 +603,20 @@ export default function TopicListPage() {
                 error={deleteError}
                 onCancel={() => { if (!deleteInProgress.current) { setTopicToDelete(null); setDeleteError(""); } }}
                 onConfirm={handleConfirmDelete}
+            />
+            <StatusConfirmModal
+                item={topicToChangeStatus}
+                message="Nonaktifkan topik? FAQ di dalamnya tidak akan tampil di halaman publik."
+                confirmLabel="Nonaktifkan topik"
+                saving={changingStatusId === topicToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setTopicToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(topicToChangeStatus, false)}
             />
         </section>
     );

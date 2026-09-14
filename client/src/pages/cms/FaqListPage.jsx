@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
     ChevronLeft,
@@ -7,17 +7,23 @@ import {
     Plus,
     Search,
     Trash2,
+    X,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import {
-    getCategories,
-    getCmsFaqs,
     deleteCmsFaq,
+    getCmsCategories,
+    getCmsFaqs,
+    getCmsTopicById,
+    getCmsTopics,
+    updateCmsFaq,
 } from "../../services/api";
 
 import DeleteFaqModal from "../../components/cms/DeleteFaqModal";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 
 function extractCategories(result) {
     if (Array.isArray(result?.data)) {
@@ -31,50 +37,109 @@ function extractCategories(result) {
     return [];
 }
 
+function FaqSearchInput({ search, onSearchChange }) {
+    const [searchInput, setSearchInput] = useState(search);
+
+    useEffect(() => {
+        const keyword = searchInput.trim();
+
+        if (keyword === search) return undefined;
+
+        const timeoutId = setTimeout(() => {
+            onSearchChange({ search: keyword, page: 1 });
+        }, 400);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchInput, search, onSearchChange]);
+
+    return (
+        <div className="relative">
+            <Search
+                size={20}
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+
+            <input
+                type="search"
+                aria-label="Cari pertanyaan FAQ"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Cari pertanyaan..."
+                className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
+        </div>
+    );
+}
+
 export default function FaqListPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const search = searchParams.get("search") ?? "";
+    const categorySlug = searchParams.get("category") ?? "";
+    const topicId = searchParams.get("topic") ?? "";
+    const status = searchParams.get("status") ?? "";
+    const page = readPage(searchParams.get("page"));
     const [faqs, setFaqs] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [topics, setTopics] = useState([]);
+    const [selectedTopic, setSelectedTopic] = useState(null);
     const [meta, setMeta] = useState(null);
-
-    const [page, setPage] = useState(1);
-    const [searchInput, setSearchInput] = useState("");
-    const [search, setSearch] = useState("");
-    const [categorySlug, setCategorySlug] = useState("");
-    const [status, setStatus] = useState("");
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [categoryError, setCategoryError] = useState("");
+    const [actionError, setActionError] = useState("");
+    const [filterError, setFilterError] = useState("");
 
     const [faqToDelete, setFaqToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
+    const [faqToChangeStatus, setFaqToChangeStatus] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
     const [success, setSuccess] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
 
     const deleteInProgress = useRef(false);
+    const statusChangingRef = useRef(false);
+
+    const updateFilterParameters = useCallback((changes) => {
+        const nextParams = new URLSearchParams(searchParams);
+
+        Object.entries(changes).forEach(([key, value]) => {
+            if (value === "" || value === null || value === undefined) {
+                nextParams.delete(key);
+            } else {
+                nextParams.set(key, String(value));
+            }
+        });
+
+        setSearchParams(nextParams);
+    }, [searchParams, setSearchParams]);
 
     useEffect(() => {
         let active = true;
 
-        async function loadCategories() {
+        async function loadFilterOptions() {
             try {
-                const result = await getCategories();
-
+                const [categoryResult, topicData] = await Promise.all([
+                    getCmsCategories(),
+                    getAllCmsTopics(),
+                ]);
                 if (!active) return;
 
-                setCategories(extractCategories(result));
-                setCategoryError("");
+                setCategories(extractCategories(categoryResult));
+                setTopics(topicData);
+                setFilterError("");
             } catch (err) {
                 if (active) {
-                    setCategoryError(
-                        err.message || "Gagal mengambil kategori."
+                    setFilterError(
+                        err.message || "Gagal mengambil opsi filter."
                     );
                 }
             }
         }
 
-        loadCategories();
+        loadFilterOptions();
 
         return () => {
             active = false;
@@ -82,17 +147,41 @@ export default function FaqListPage() {
     }, []);
 
     useEffect(() => {
-        const keyword = searchInput.trim();
+        if (!topicId) {
+            return undefined;
+        }
 
-        if (keyword === search) return;
+        let active = true;
 
-        const timeoutId = setTimeout(() => {
-            setSearch(keyword);
-            setPage(1);
-        }, 400);
+        async function loadSelectedTopic() {
+            try {
+                const result = await getCmsTopicById(topicId);
+                if (!active) return;
 
-        return () => clearTimeout(timeoutId);
-    }, [searchInput, search]);
+                const topic = result?.data ?? null;
+                setSelectedTopic(topic);
+
+                if (topic?.category?.slug && topic.category.slug !== categorySlug) {
+                    const nextParams = new URLSearchParams(searchParams);
+                    nextParams.set("category", topic.category.slug);
+                    setSearchParams(nextParams);
+                }
+            } catch (err) {
+                if (active) {
+                    setSelectedTopic(null);
+                    setFilterError(
+                        err.message || "Topik filter tidak dapat dimuat."
+                    );
+                }
+            }
+        }
+
+        loadSelectedTopic();
+
+        return () => {
+            active = false;
+        };
+    }, [topicId, categorySlug, searchParams, setSearchParams]);
 
     useEffect(() => {
         let active = true;
@@ -106,6 +195,7 @@ export default function FaqListPage() {
                 const result = await getCmsFaqs({
                     search,
                     category: categorySlug,
+                    topic: topicId,
                     status,
                     page,
                     limit: 10,
@@ -125,7 +215,7 @@ export default function FaqListPage() {
                     // kembali ke halaman terakhir yang masih tersedia.
                     if (page > lastPage) {
                         changingPage = true;
-                        setPage(lastPage);
+                        updateFilterParameters({ page: lastPage });
                         return;
                     }
                 }
@@ -157,28 +247,62 @@ export default function FaqListPage() {
         return () => {
             active = false;
         };
-    }, [search, categorySlug, status, page, refreshKey]);
+    }, [
+        search,
+        categorySlug,
+        topicId,
+        status,
+        page,
+        refreshKey,
+        updateFilterParameters,
+    ]);
 
     function handleCategoryChange(event) {
-        setCategorySlug(event.target.value);
-        setPage(1);
+        const nextCategory = event.target.value;
+        const selected = topics.find(
+            (topic) => String(topic.id) === topicId
+        ) ?? (
+            String(selectedTopic?.id) === topicId ? selectedTopic : null
+        );
+        const clearTopic =
+            topicId &&
+            nextCategory &&
+            (!selected || selected.category?.slug !== nextCategory);
+
+        updateFilterParameters({
+            category: nextCategory,
+            topic: clearTopic ? "" : topicId,
+            page: 1,
+        });
+    }
+
+    function handleTopicChange(event) {
+        const nextTopicId = event.target.value;
+        const nextTopic = topics.find(
+            (topic) => String(topic.id) === nextTopicId
+        );
+
+        updateFilterParameters({
+            topic: nextTopicId,
+            category: nextTopic?.category?.slug ?? categorySlug,
+            page: 1,
+        });
     }
 
     function handleStatusChange(event) {
-        setStatus(event.target.value);
-        setPage(1);
+        updateFilterParameters({ status: event.target.value, page: 1 });
     }
 
     function handlePreviousPage() {
         if (loading || page <= 1) return;
 
-        setPage((current) => current - 1);
+        updateFilterParameters({ page: page - 1 });
     }
 
     function handleNextPage() {
         if (loading || !meta?.hasNextPage) return;
 
-        setPage((current) => current + 1);
+        updateFilterParameters({ page: page + 1 });
     }
 
     function handleOpenDelete(faq) {
@@ -222,6 +346,52 @@ export default function FaqListPage() {
         }
     }
 
+    async function saveStatus(faq, isPublished) {
+        if (!faq || statusChangingRef.current) return;
+
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(faq.id);
+            setActionError("");
+            setStatusError("");
+            const result = await updateCmsFaq(faq.id, { isPublished });
+            const updatedFaq = result?.data ?? { ...faq, isPublished };
+            setFaqs((current) =>
+                current.map((item) =>
+                    item.id === faq.id ? { ...item, ...updatedFaq } : item
+                )
+            );
+            setSuccess(result?.message ?? "Status FAQ berhasil diperbarui.");
+            setFaqToChangeStatus(null);
+        } catch (err) {
+            const message = err.message || "Gagal memperbarui status FAQ.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(faq) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (faq.isPublished) {
+            setFaqToChangeStatus(faq);
+            return;
+        }
+        saveStatus(faq, true);
+    }
+
+    function clearTopicFilter() {
+        updateFilterParameters({ topic: "", page: 1 });
+    }
+
+    const availableTopics = categorySlug
+        ? topics.filter((topic) => topic.category?.slug === categorySlug)
+        : topics;
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -245,25 +415,12 @@ export default function FaqListPage() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="grid gap-4 lg:grid-cols-[1fr_240px_180px]">
-                    <div className="relative">
-                        <Search
-                            size={20}
-                            aria-hidden="true"
-                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-
-                        <input
-                            type="search"
-                            aria-label="Cari pertanyaan FAQ"
-                            value={searchInput}
-                            onChange={(event) =>
-                                setSearchInput(event.target.value)
-                            }
-                            placeholder="Cari pertanyaan..."
-                            className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                        />
-                    </div>
+                <div className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_200px_200px_180px]">
+                    <FaqSearchInput
+                        key={search}
+                        search={search}
+                        onSearchChange={updateFilterParameters}
+                    />
 
                     <select
                         aria-label="Filter kategori"
@@ -279,6 +436,21 @@ export default function FaqListPage() {
                                 value={category.slug}
                             >
                                 {category.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        aria-label="Filter topik"
+                        value={topicId}
+                        onChange={handleTopicChange}
+                        className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                    >
+                        <option value="">Semua topik</option>
+
+                        {availableTopics.map((topic) => (
+                            <option key={topic.id} value={topic.id}>
+                                {topic.name}
                             </option>
                         ))}
                     </select>
@@ -304,12 +476,12 @@ export default function FaqListPage() {
                     </div>
                 )}
 
-                {categoryError && (
+                {filterError && (
                     <div
                         role="alert"
                         className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800"
                     >
-                        Filter kategori tidak dapat dimuat: {categoryError}
+                        Filter tidak dapat dimuat: {filterError}
                     </div>
                 )}
 
@@ -319,6 +491,36 @@ export default function FaqListPage() {
                         className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600"
                     >
                         {error}
+                    </div>
+                )}
+
+                {actionError && (
+                    <div
+                        role="alert"
+                        className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-600"
+                    >
+                        {actionError}
+                    </div>
+                )}
+
+                {topicId && (
+                    <div className="mt-4">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 py-1 pl-3 pr-1 text-sm text-blue-800">
+                            <span>
+                                Topik: {String(selectedTopic?.id) === topicId
+                                    ? selectedTopic.name
+                                    : "Memuat topik..."}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={clearTopicFilter}
+                                aria-label="Hapus filter topik"
+                                title="Hapus filter topik"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-full text-blue-700 transition hover:bg-blue-100 hover:text-blue-900"
+                            >
+                                <X size={16} aria-hidden="true" />
+                            </button>
+                        </span>
                     </div>
                 )}
 
@@ -402,6 +604,14 @@ export default function FaqListPage() {
                                 </dl>
 
                                 <div className="mt-4 flex gap-2">
+                                    <VisibilityButton
+                                        isVisible={faq.isPublished}
+                                        disableLabel="Jadikan FAQ sebagai draf"
+                                        enableLabel="Terbitkan FAQ"
+                                        loading={changingStatusId === faq.id}
+                                        onClick={() => handleStatusRequest(faq)}
+                                        className="flex-1"
+                                    />
                                     <Link
                                         to={`/faqs/${faq.id}/edit`}
                                         aria-label={`Edit ${faq.question}`}
@@ -541,6 +751,13 @@ export default function FaqListPage() {
 
                                         <td className="px-4 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <VisibilityButton
+                                                    isVisible={faq.isPublished}
+                                                    disableLabel="Jadikan FAQ sebagai draf"
+                                                    enableLabel="Terbitkan FAQ"
+                                                    loading={changingStatusId === faq.id}
+                                                    onClick={() => handleStatusRequest(faq)}
+                                                />
                                                 <Link
                                                     to={`/faqs/${faq.id}/edit`}
                                                     aria-label={`Edit ${faq.question}`}
@@ -615,6 +832,48 @@ export default function FaqListPage() {
                 onCancel={handleCancelDelete}
                 onConfirm={handleConfirmDelete}
             />
+            <StatusConfirmModal
+                item={faqToChangeStatus}
+                message="Jadikan FAQ sebagai draf? FAQ tidak akan tampil di halaman publik."
+                confirmLabel="Jadikan draf"
+                saving={changingStatusId === faqToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setFaqToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(faqToChangeStatus, false)}
+            />
         </section>
     );
+}
+
+function readPage(value) {
+    return /^\d+$/.test(value ?? "") && Number(value) >= 1
+        ? Number(value)
+        : 1;
+}
+
+async function getAllCmsTopics() {
+    const topics = [];
+    let page = 1;
+
+    while (true) {
+        const result = await getCmsTopics({ page, limit: 50 });
+        topics.push(
+            ...(Array.isArray(result?.data) ? result.data : [])
+        );
+
+        const totalPages = Math.max(
+            1,
+            Number(result?.meta?.totalPages) || 0
+        );
+        if (page >= totalPages) {
+            return topics;
+        }
+
+        page += 1;
+    }
 }

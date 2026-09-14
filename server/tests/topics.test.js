@@ -281,7 +281,13 @@ test(
                     ]) {
                         await request(path, { expected: 400 });
                     }
+                    await request("/cms/topics/no-id/faqs", {
+                        expected: 400,
+                    });
                     await request("/cms/topics/2147483647", { expected: 404 });
+                    await request("/cms/topics/2147483647/faqs", {
+                        expected: 404,
+                    });
                 },
             );
 
@@ -292,6 +298,21 @@ test(
                         [topic.id, `Pertanyaan ${token}`],
                     )
                 ).rows[0];
+                const faqList = await request(
+                    `/cms/topics/${topic.id}/faqs`,
+                );
+
+                assert.equal(faqList.data.topic.id, topic.id);
+                assert.equal(faqList.data.topic.faqCount, 1);
+                assert.deepEqual(faqList.data.faqs, [
+                    {
+                        id: faq.id,
+                        question: `Pertanyaan ${token}`,
+                        isPublished: true,
+                        sortOrder: 0,
+                    },
+                ]);
+
                 const result = await request(`/cms/topics/${topic.id}`, {
                     method: "DELETE",
                     expected: 409,

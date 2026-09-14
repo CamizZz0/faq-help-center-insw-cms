@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Pencil, PlayCircle, Plus, Search, Trash2 } from "lucide-react";
-import { deleteCmsTutorial, getCmsTutorials } from "../../services/api";
+import { deleteCmsTutorial, getCmsTutorials, updateCmsTutorial } from "../../services/api";
 import DeleteTutorialModal from "../../components/cms/DeleteTutorialModal";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 
 export default function TutorialListPage() {
     const location = useLocation();
@@ -15,11 +17,16 @@ export default function TutorialListPage() {
     const [meta, setMeta] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
     const [tutorialToDelete, setTutorialToDelete] = useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
+    const [tutorialToChangeStatus, setTutorialToChangeStatus] = useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
     const deletingRef = useRef(false);
+    const statusChangingRef = useRef(false);
 
     useEffect(() => {
         const keyword = searchInput.trim();
@@ -60,6 +67,41 @@ export default function TutorialListPage() {
         finally { deletingRef.current = false; setDeleting(false); }
     }
 
+    async function saveStatus(tutorial, isPublished) {
+        if (!tutorial || statusChangingRef.current) return;
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(tutorial.id);
+            setActionError("");
+            setStatusError("");
+            const result = await updateCmsTutorial(tutorial.id, { isPublished });
+            const updatedTutorial = result?.data ?? { ...tutorial, isPublished };
+            setTutorials((current) => current.map((item) =>
+                item.id === tutorial.id ? { ...item, ...updatedTutorial } : item
+            ));
+            setSuccess(result?.message ?? "Status tutorial berhasil diperbarui.");
+            setTutorialToChangeStatus(null);
+        } catch (err) {
+            const message = err.message || "Gagal memperbarui status tutorial.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(tutorial) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (tutorial.isPublished) {
+            setTutorialToChangeStatus(tutorial);
+            return;
+        }
+        saveStatus(tutorial, true);
+    }
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -68,6 +110,7 @@ export default function TutorialListPage() {
             </div>
 
             {success && <div role="status" className="mt-6 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700"><span>{success}</span><button type="button" onClick={() => setSuccess("")} className="font-semibold">Tutup</button></div>}
+            {actionError && <div role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{actionError}</div>}
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
                 <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px]">
                     <label className="relative"><span className="sr-only">Cari tutorial</span><Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" /><input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Cari judul tutorial..." className="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" /></label>
@@ -154,6 +197,14 @@ export default function TutorialListPage() {
                             </div>
 
                             <div className="mt-4 flex gap-2">
+                                <VisibilityButton
+                                    isVisible={tutorial.isPublished}
+                                    disableLabel="Jadikan tutorial sebagai draf"
+                                    enableLabel="Terbitkan tutorial"
+                                    loading={changingStatusId === tutorial.id}
+                                    onClick={() => handleStatusRequest(tutorial)}
+                                    className="flex-1"
+                                />
                                 <Link
                                     to={`/tutorials/${tutorial.id}/edit`}
                                     aria-label={`Edit ${tutorial.title}`}
@@ -186,11 +237,25 @@ export default function TutorialListPage() {
                     : error ? <p role="alert" className="m-5 rounded-xl bg-red-50 p-4 text-red-600">{error}</p>
                     : tutorials.length === 0 ? <div className="p-10 text-center"><PlayCircle size={40} className="mx-auto text-slate-400" /><h2 className="mt-3 font-semibold text-slate-900">Tutorial belum tersedia</h2><p className="mt-1 text-sm text-slate-500">Tambahkan tutorial atau ubah filter pencarian.</p></div>
                     : <div className="overflow-x-auto"><table className="w-full min-w-[700px] table-fixed text-left"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="w-[70%] px-5 py-4">Tutorial</th><th className="w-[15%] px-5 py-4">Status</th><th className="w-[15%] px-5 py-4 text-right">Aksi</th></tr></thead>
-                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
+                        <tbody className="divide-y divide-slate-200">{tutorials.map((tutorial) => <tr key={tutorial.id} className="h-24 text-sm text-slate-700"><td className="px-5 py-4"><div className="flex items-center gap-4"><img src={tutorial.thumbnailUrl} alt="" className="h-14 w-24 shrink-0 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tutorial.title}</p><p className="mt-1 truncate text-xs text-slate-500">{tutorial.description || tutorial.videoUrl}</p></div></div></td><td className="px-5 py-4"><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tutorial.isPublished ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{tutorial.isPublished ? "Terbit" : "Draft"}</span></td><td className="px-5 py-4"><div className="flex justify-end gap-2"><VisibilityButton isVisible={tutorial.isPublished} disableLabel="Jadikan tutorial sebagai draf" enableLabel="Terbitkan tutorial" loading={changingStatusId === tutorial.id} onClick={() => handleStatusRequest(tutorial)} /><Link to={`/tutorials/${tutorial.id}/edit`} aria-label={`Edit ${tutorial.title}`} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50"><Pencil size={17} /></Link><button type="button" aria-label={`Hapus ${tutorial.title}`} onClick={() => { setTutorialToDelete(tutorial); setDeleteError(""); }} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><Trash2 size={17} /></button></div></td></tr>)}</tbody></table></div>}
             </div>
 
             {!loading && !error && meta && meta.totalPages > 1 && <div className="mt-6 flex items-center justify-between gap-4"><p className="text-sm text-slate-500">Halaman {meta.page} dari {meta.totalPages}</p><div className="flex gap-2"><button type="button" disabled={!meta.hasPreviousPage} onClick={() => setPage((value) => value - 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronLeft size={18} /></button><button type="button" disabled={!meta.hasNextPage} onClick={() => setPage((value) => value + 1)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 disabled:opacity-40"><ChevronRight size={18} /></button></div></div>}
             <DeleteTutorialModal tutorial={tutorialToDelete} deleting={deleting} error={deleteError} onCancel={() => { if (!deleting) setTutorialToDelete(null); }} onConfirm={confirmDelete} />
+            <StatusConfirmModal
+                item={tutorialToChangeStatus}
+                message="Jadikan tutorial sebagai draf? Tutorial tidak akan tampil di halaman publik."
+                confirmLabel="Jadikan draf"
+                saving={changingStatusId === tutorialToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setTutorialToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(tutorialToChangeStatus, false)}
+            />
         </section>
     );
 }

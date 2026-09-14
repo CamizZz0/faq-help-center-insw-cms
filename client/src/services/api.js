@@ -199,6 +199,10 @@ export function getCmsTopics(params = {}) {
     return request(`/cms/topics${createQuery(params)}`);
 }
 
+export function getCmsTopicFaqs(id) {
+    return request(`/cms/topics/${encodeURIComponent(id)}/faqs`);
+}
+
 export function getCmsTopicById(id) {
     return request(`/cms/topics/${encodeURIComponent(id)}`);
 }

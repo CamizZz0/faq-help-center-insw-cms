@@ -19,6 +19,15 @@ import {
 
 import sanitizeHtml from "sanitize-html";
 
+function parsePositiveId(value) {
+    if (!/^\d+$/.test(String(value))) return null;
+
+    const id = Number(value);
+    return Number.isSafeInteger(id) && id >= 1 && id <= 2147483647
+        ? id
+        : null;
+}
+
 export async function getCmsFaqs(req, res) {
     try {
         const search = String(
@@ -28,6 +37,12 @@ export async function getCmsFaqs(req, res) {
         const categorySlug = String(
             req.query.category ?? ""
         ).trim();
+
+        const topicParam = req.query.topic;
+        const topicId =
+            topicParam === undefined || topicParam === ""
+                ? null
+                : parsePositiveId(topicParam);
 
         const status = String(
             req.query.status ?? ""
@@ -61,6 +76,17 @@ export async function getCmsFaqs(req, res) {
             });
         }
 
+        if (
+            topicParam !== undefined &&
+            topicParam !== "" &&
+            topicId === null
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Parameter topic harus berupa ID positif",
+            });
+        }
+
         const conditions = [];
 
         if (search) {
@@ -85,6 +111,10 @@ export async function getCmsFaqs(req, res) {
                     categorySlug
                 )
             );
+        }
+
+        if (topicId !== null) {
+            conditions.push(eq(faqs.topicId, topicId));
         }
 
         if (status === "published") {
@@ -417,9 +447,9 @@ export async function createCmsFaq(req, res) {
 
 export async function getCmsFaqById(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID FAQ tidak valid",
@@ -493,9 +523,9 @@ export async function getCmsFaqById(req, res) {
 
 export async function updateCmsFaq(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID FAQ tidak valid",
@@ -660,9 +690,9 @@ export async function updateCmsFaq(req, res) {
 
 export async function deleteCmsFaq(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID FAQ tidak valid",

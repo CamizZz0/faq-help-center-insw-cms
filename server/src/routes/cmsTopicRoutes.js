@@ -3,6 +3,7 @@ import {
     createCmsTopic,
     deleteCmsTopic,
     getCmsTopicById,
+    getCmsTopicFaqs,
     getCmsTopics,
     updateCmsTopic,
 } from "../controllers/cmsTopicController.js";
@@ -10,6 +11,7 @@ import {
 const router = Router();
 
 router.get("/", getCmsTopics);
+router.get("/:id/faqs", getCmsTopicFaqs);
 router.get("/:id", getCmsTopicById);
 router.post("/", createCmsTopic);
 router.patch("/:id", updateCmsTopic);

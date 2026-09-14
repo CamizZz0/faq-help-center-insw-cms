@@ -14,11 +14,14 @@ import {
 import {
     deleteCmsCategory,
     getCmsCategories,
+    updateCmsCategory,
 } from "../../services/api";
 
 import CategoryForm from "../../components/cms/CategoryForm";
 import DeleteCategoryModal from "../../components/cms/DeleteCategoryModal";
 import IconPreview from "../../components/cms/IconPreview";
+import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
+import VisibilityButton from "../../components/cms/VisibilityButton";
 
 export default function CategoryPage() {
     const [categories, setCategories] = useState([]);
@@ -28,6 +31,7 @@ export default function CategoryPage() {
     const [formMode, setFormMode] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [actionError, setActionError] = useState("");
     const [success, setSuccess] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -35,8 +39,13 @@ export default function CategoryPage() {
         useState(null);
     const [deleting, setDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState("");
+    const [categoryToChangeStatus, setCategoryToChangeStatus] =
+        useState(null);
+    const [changingStatusId, setChangingStatusId] = useState(null);
+    const [statusError, setStatusError] = useState("");
 
     const deletingRef = useRef(false);
+    const statusChangingRef = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -164,6 +173,55 @@ export default function CategoryPage() {
         }
     }
 
+    async function saveStatus(category, isActive) {
+        if (statusChangingRef.current) return;
+
+        try {
+            statusChangingRef.current = true;
+            setChangingStatusId(category.id);
+            setStatusError("");
+            setActionError("");
+
+            const payload = new FormData();
+            payload.set("isActive", String(isActive));
+            const result = await updateCmsCategory(category.id, payload);
+            const updatedCategory = result?.data ?? { ...category, isActive };
+
+            setCategories((current) =>
+                current.map((item) =>
+                    item.id === category.id
+                        ? { ...item, ...updatedCategory }
+                        : item
+                )
+            );
+            setSelectedCategory((current) =>
+                current?.id === category.id
+                    ? { ...current, ...updatedCategory }
+                    : current
+            );
+            setSuccess(result?.message ?? "Status kategori berhasil diperbarui.");
+            setCategoryToChangeStatus(null);
+        } catch (err) {
+            const message = err.message || "Gagal memperbarui status kategori.";
+            setStatusError(message);
+            setActionError(message);
+        } finally {
+            statusChangingRef.current = false;
+            setChangingStatusId(null);
+        }
+    }
+
+    function handleStatusRequest(category) {
+        setSuccess("");
+        setActionError("");
+        setStatusError("");
+        if (category.isActive) {
+            setCategoryToChangeStatus(category);
+            return;
+        }
+        saveStatus(category, true);
+    }
+
     return (
         <section className="mx-auto max-w-7xl">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -203,6 +261,15 @@ export default function CategoryPage() {
                     className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700"
                 >
                     {error}
+                </div>
+            )}
+
+            {actionError && (
+                <div
+                    role="alert"
+                    className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700"
+                >
+                    {actionError}
                 </div>
             )}
 
@@ -308,6 +375,13 @@ export default function CategoryPage() {
                                             </div>
 
                                             <div className="flex shrink-0 items-center gap-2">
+                                                <VisibilityButton
+                                                    isVisible={category.isActive}
+                                                    disableLabel="Nonaktifkan kategori"
+                                                    enableLabel="Aktifkan kategori"
+                                                    loading={changingStatusId === category.id}
+                                                    onClick={() => handleStatusRequest(category)}
+                                                />
                                                 <button
                                                     type="button"
                                                     onClick={() =>
@@ -380,6 +454,20 @@ export default function CategoryPage() {
                 error={deleteError}
                 onCancel={handleCancelDelete}
                 onConfirm={handleConfirmDelete}
+            />
+            <StatusConfirmModal
+                item={categoryToChangeStatus}
+                message="Nonaktifkan kategori? Subkategori, topik, dan FAQ di dalamnya tidak akan tampil di halaman publik."
+                confirmLabel="Nonaktifkan kategori"
+                saving={changingStatusId === categoryToChangeStatus?.id}
+                error={statusError}
+                onCancel={() => {
+                    if (!statusChangingRef.current) {
+                        setCategoryToChangeStatus(null);
+                        setStatusError("");
+                    }
+                }}
+                onConfirm={() => saveStatus(categoryToChangeStatus, false)}
             />
         </section>
     );

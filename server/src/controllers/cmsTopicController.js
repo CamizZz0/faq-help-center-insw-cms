@@ -275,6 +275,47 @@ export async function getCmsTopicById(req, res) {
     }
 }
 
+export async function getCmsTopicFaqs(req, res) {
+    try {
+        const id = parsePositiveId(req.params.id);
+        if (!id) return validationResponse(res, "ID topik tidak valid");
+
+        const topic = await getTopicRecord(id);
+        if (!topic) {
+            return res.status(404).json({
+                success: false,
+                message: "Topik tidak ditemukan",
+            });
+        }
+
+        const faqList = await db
+            .select({
+                id: faqs.id,
+                question: faqs.question,
+                isPublished: faqs.isPublished,
+                sortOrder: faqs.sortOrder,
+            })
+            .from(faqs)
+            .where(eq(faqs.topicId, id))
+            .orderBy(asc(faqs.sortOrder), asc(faqs.id));
+
+        return res.json({
+            success: true,
+            message: "Daftar FAQ topik berhasil diambil",
+            data: {
+                topic,
+                faqs: faqList,
+            },
+        });
+    } catch (error) {
+        console.error("Gagal mengambil FAQ topik:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Terjadi kesalahan saat mengambil FAQ topik",
+        });
+    }
+}
+
 export async function createCmsTopic(req, res) {
     try {
         const body = req.body ?? {};

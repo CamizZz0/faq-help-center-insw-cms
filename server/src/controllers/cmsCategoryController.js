@@ -68,6 +68,15 @@ function parseBooleanField(value) {
     return null;
 }
 
+function parsePositiveId(value) {
+    if (!/^\d+$/.test(String(value))) return null;
+
+    const id = Number(value);
+    return Number.isSafeInteger(id) && id >= 1 && id <= 2147483647
+        ? id
+        : null;
+}
+
 /*
  * Ikon hanya boleh berasal dari upload file, bukan URL
  * yang dikirim melalui body.
@@ -141,9 +150,9 @@ export async function getCmsCategories(req, res) {
 
 export async function getCmsCategoryById(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID kategori tidak valid",
@@ -342,9 +351,9 @@ export async function updateCmsCategory(req, res) {
     let databaseUpdated = false;
 
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID kategori tidak valid",
@@ -539,9 +548,9 @@ export async function updateCmsCategory(req, res) {
 
 export async function deleteCmsCategory(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = parsePositiveId(req.params.id);
 
-        if (!Number.isInteger(id) || id < 1) {
+        if (!id) {
             return res.status(400).json({
                 success: false,
                 message: "ID kategori tidak valid",
