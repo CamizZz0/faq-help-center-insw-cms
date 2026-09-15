@@ -5,6 +5,7 @@ import {
     eq,
     ilike,
     inArray,
+    or,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
@@ -26,6 +27,11 @@ import {
 import {
     guideForResponse,
 } from "../services/guideFiles.js";
+
+import {
+    createSearchPlan,
+    getSearchSuggestions,
+} from "../utils/smartSearch.js";
 
 function validationError(res, message) {
     return res.status(400).json({
@@ -120,13 +126,14 @@ export async function searchHelpCenter(req, res) {
      * Mencegah karakter %, _, dan backslash
      * dianggap sebagai wildcard pencarian SQL.
      */
-    const escapedQuery = query.replace(
-        /[\\%_]/g,
-        "\\$&",
+    const searchPlan = createSearchPlan(query);
+    const patterns = searchPlan.terms.map((term) =>
+        `%${term.replace(/[\\%_]/g, "\\$&")}%`,
     );
 
-    const pattern =
-        `%${escapedQuery}%`;
+    function matchesAny(field) {
+        return or(...patterns.map((pattern) => ilike(field, pattern)));
+    }
 
     // SIMULASI DEMO (bukan autentikasi): viewerRole=guest|authenticated.
     // TODO(auth): hapus param ini; filter visibility di backend dari sesi/JWT.
@@ -146,7 +153,7 @@ export async function searchHelpCenter(req, res) {
         eq(faqTopics.isActive, true),
         eq(subcategories.isActive, true),
         eq(categories.isActive, true),
-        ilike(faqs.question, pattern),
+        matchesAny(faqs.question),
         ...faqVisibilityConditions,
     );
 
@@ -155,7 +162,7 @@ export async function searchHelpCenter(req, res) {
      */
     const guideFilter = and(
         eq(guides.isPublished, true),
-        ilike(guides.title, pattern),
+        matchesAny(guides.title),
     );
 
     /*
@@ -163,7 +170,7 @@ export async function searchHelpCenter(req, res) {
      */
     const tutorialFilter = and(
         eq(tutorials.isPublished, true),
-        ilike(tutorials.title, pattern),
+        matchesAny(tutorials.title),
     );
 
     try {
@@ -480,6 +487,12 @@ export async function searchHelpCenter(req, res) {
                     page > 1,
 
                 counts,
+                correctedQuery: searchPlan.correctedQuery,
+                highlightTerms: searchPlan.highlightTerms,
+                suggestions:
+                    totalItems === 0
+                        ? getSearchSuggestions(query)
+                        : [],
             },
         });
     } catch (error) {

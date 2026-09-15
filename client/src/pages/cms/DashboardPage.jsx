@@ -11,6 +11,8 @@ import {
     Network,
     Pencil,
     PlayCircle,
+    ThumbsDown,
+    ThumbsUp,
 } from "lucide-react";
 
 import { getCmsDashboard } from "../../services/api";
@@ -219,6 +221,71 @@ function EmptyRecent({ label }) {
     );
 }
 
+function FeedbackOverview({ feedback, negativeFaqs }) {
+    const total = feedback?.total ?? 0;
+    const helpful = feedback?.helpful ?? 0;
+    const notHelpful = feedback?.notHelpful ?? 0;
+
+    return (
+        <section className="mt-10">
+            <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                    Feedback FAQ
+                </h2>
+                <p className="mt-2 text-slate-600">
+                    Ringkasan masukan pengunjung terhadap jawaban FAQ.
+                </p>
+            </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                    <p className="text-sm font-medium text-slate-600">Total feedback</p>
+                    <p className="mt-2 text-3xl font-bold text-slate-900">{total}</p>
+                </div>
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                    <p className="inline-flex items-center gap-2 text-sm font-medium text-emerald-800">
+                        <ThumbsUp size={16} aria-hidden="true" /> Membantu
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-emerald-900">{helpful}</p>
+                </div>
+                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+                    <p className="inline-flex items-center gap-2 text-sm font-medium text-rose-800">
+                        <ThumbsDown size={16} aria-hidden="true" /> Tidak membantu
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-rose-900">{notHelpful}</p>
+                </div>
+            </div>
+
+            <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <div className="border-b border-slate-200 px-5 py-4">
+                    <h3 className="font-bold text-slate-900">FAQ yang perlu ditinjau</h3>
+                    <p className="mt-1 text-sm text-slate-600">Diurutkan dari jumlah feedback Tidak terbanyak.</p>
+                </div>
+
+                {negativeFaqs.length === 0 ? (
+                    <EmptyRecent label="Belum ada feedback negatif." />
+                ) : (
+                    <ul className="divide-y divide-slate-200">
+                        {negativeFaqs.map((faq) => (
+                            <li key={faq.faqId} className="flex items-center justify-between gap-4 px-5 py-4">
+                                <p className="line-clamp-2 min-w-0 font-medium text-slate-900">{faq.question}</p>
+                                <div className="flex shrink-0 items-center gap-3">
+                                    <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
+                                        {faq.notHelpful} tidak membantu
+                                    </span>
+                                    <Link to={`/faqs/${faq.faqId}/edit`} className={editButtonClass} aria-label={`Edit ${faq.question}`}>
+                                        <Pencil size={17} aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </section>
+    );
+}
+
 function RecentContent({ recentContent, activeTab }) {
     if (activeTab === "faqs") {
         const faqs = recentContent?.faqs ?? [];
@@ -333,6 +400,9 @@ export default function DashboardPage() {
     const [recentContent, setRecentContent] =
         useState(null);
 
+    const [feedback, setFeedback] = useState(null);
+    const [negativeFeedbackFaqs, setNegativeFeedbackFaqs] = useState([]);
+
     const [activeTab, setActiveTab] =
         useState("faqs");
 
@@ -362,11 +432,16 @@ export default function DashboardPage() {
                     result?.data?.recentContent ??
                         null
                 );
+
+                setFeedback(result?.data?.statistics?.feedback ?? null);
+                setNegativeFeedbackFaqs(result?.data?.negativeFeedbackFaqs ?? []);
             } catch (err) {
                 if (!active) return;
 
                 setStatistics(null);
                 setRecentContent(null);
+                setFeedback(null);
+                setNegativeFeedbackFaqs([]);
                 setError(
                     err.message ||
                         "Gagal mengambil ringkasan dashboard."
@@ -494,6 +569,11 @@ export default function DashboardPage() {
                             />
                         </div>
                     </div>
+
+                    <FeedbackOverview
+                        feedback={feedback}
+                        negativeFaqs={negativeFeedbackFaqs}
+                    />
                 </>
             )}
         </section>

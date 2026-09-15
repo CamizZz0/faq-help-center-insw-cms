@@ -6,6 +6,7 @@ import {
     integer,
     boolean,
     timestamp,
+    index,
 } from "drizzle-orm/pg-core";
 
 export const categories = pgTable("categories", {
@@ -249,3 +250,26 @@ export const tutorials = pgTable("tutorials", {
         .defaultNow()
         .notNull(),
 });
+
+export const faqFeedback = pgTable(
+    "faq_feedback",
+    {
+        id: serial("id").primaryKey(),
+
+        faqId: integer("faq_id")
+            .notNull()
+            .references(() => faqs.id, { onDelete: "cascade" }),
+
+        isHelpful: boolean("is_helpful").notNull(),
+
+        reason: text("reason"),
+
+        createdAt: timestamp("created_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("faq_feedback_faq_id_idx").on(table.faqId),
+        index("faq_feedback_created_at_idx").on(table.createdAt),
+    ],
+);

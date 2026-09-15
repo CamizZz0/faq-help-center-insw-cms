@@ -1,4 +1,4 @@
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "../config/db.js";
 
@@ -9,6 +9,7 @@ import {
     faqs,
     guides,
     tutorials,
+    faqFeedback,
 } from "../models/schema.js";
 
 const RECENT_LIMIT = 5;
@@ -52,6 +53,8 @@ export async function getCmsDashboard(req, res) {
             recentFaqs,
             recentGuides,
             recentTutorials,
+            feedbackSummary,
+            negativeFeedbackFaqs,
         ] = await Promise.all([
             resolveTotal(
                 countRows(
@@ -188,6 +191,27 @@ export async function getCmsDashboard(req, res) {
                 .from(tutorials)
                 .orderBy(desc(tutorials.updatedAt))
                 .limit(RECENT_LIMIT),
+
+            db
+                .select({
+                    total: count(faqFeedback.id),
+                    helpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = true)`,
+                    notHelpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`,
+                })
+                .from(faqFeedback),
+
+            db
+                .select({
+                    faqId: faqs.id,
+                    question: faqs.question,
+                    total: count(faqFeedback.id),
+                    notHelpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`,
+                })
+                .from(faqFeedback)
+                .innerJoin(faqs, eq(faqFeedback.faqId, faqs.id))
+                .groupBy(faqs.id, faqs.question)
+                .orderBy(desc(sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`))
+                .limit(RECENT_LIMIT),
         ]);
 
         return res.status(200).json({
@@ -217,6 +241,12 @@ export async function getCmsDashboard(req, res) {
                         published: publishedTutorials,
                         draft: draftTutorials,
                     },
+
+                    feedback: {
+                        total: Number(feedbackSummary?.[0]?.total ?? 0),
+                        helpful: Number(feedbackSummary?.[0]?.helpful ?? 0),
+                        notHelpful: Number(feedbackSummary?.[0]?.notHelpful ?? 0),
+                    },
                 },
 
                 recentContent: {
@@ -224,6 +254,12 @@ export async function getCmsDashboard(req, res) {
                     guides: recentGuides,
                     tutorials: recentTutorials,
                 },
+
+                negativeFeedbackFaqs: negativeFeedbackFaqs.map((faq) => ({
+                    ...faq,
+                    total: Number(faq.total ?? 0),
+                    notHelpful: Number(faq.notHelpful ?? 0),
+                })),
             },
         });
     } catch (error) {
