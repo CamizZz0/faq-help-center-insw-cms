@@ -9,21 +9,9 @@ import {
 import IconDropzone from "./IconDropzone";
 import { validateIconFile } from "./iconFile";
 
-function createSlug(value = "") {
-    return String(value)
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim()
-        .replace(/&/g, " ")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-}
-
 function createInitialForm(category) {
     return {
         name: category?.name ?? "",
-        slug: category?.slug ?? "",
         description: category?.description ?? "",
         isActive: category?.isActive ?? true,
     };
@@ -46,7 +34,6 @@ export default function CategoryForm({
         createInitialForm(category)
     );
 
-    const [slugEdited, setSlugEdited] = useState(isEdit);
     const [iconFile, setIconFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -66,19 +53,7 @@ export default function CategoryForm({
         setForm((current) => ({
             ...current,
             name,
-            slug:
-                !isEdit && !slugEdited
-                    ? createSlug(name)
-                    : current.slug,
         }));
-    }
-
-    function handleSlugChange(event) {
-        setSlugEdited(true);
-        updateField(
-            "slug",
-            createSlug(event.target.value)
-        );
     }
 
     async function handleSubmit(event) {
@@ -87,17 +62,10 @@ export default function CategoryForm({
         if (submitInProgress.current) return;
 
         const name = form.name.trim();
-        const slug = createSlug(form.slug || name);
-
         if (name.length < 3) {
             setError(
                 "Nama kategori minimal 3 karakter."
             );
-            return;
-        }
-
-        if (!slug) {
-            setError("Slug kategori tidak valid.");
             return;
         }
 
@@ -121,7 +89,6 @@ export default function CategoryForm({
         const formData = new FormData();
 
         formData.append("name", name);
-        formData.append("slug", slug);
         formData.append(
             "description",
             form.description.trim()
@@ -220,26 +187,6 @@ export default function CategoryForm({
                             placeholder="Contoh: Impor & Kepabeanan"
                             className={inputClass}
                         />
-                    </Field>
-
-                    <Field
-                        label="Slug *"
-                        htmlFor="category-slug"
-                    >
-                        <input
-                            id="category-slug"
-                            required
-                            value={form.slug}
-                            onChange={handleSlugChange}
-                            placeholder="impor-kepabeanan"
-                            className={inputClass}
-                        />
-
-                        <p className="mt-2 text-xs leading-5 text-slate-500">
-                            Slug digunakan sebagai alamat URL.
-                            Mengubah slug kategori lama dapat
-                            mengubah URL website publik.
-                        </p>
                     </Field>
 
                     <Field

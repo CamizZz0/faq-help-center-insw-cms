@@ -4,6 +4,8 @@ import {
     useState,
 } from "react";
 
+import { Link } from "react-router-dom";
+
 import {
     LayoutGrid,
     Pencil,
@@ -17,7 +19,6 @@ import {
     updateCmsCategory,
 } from "../../services/api";
 
-import CategoryForm from "../../components/cms/CategoryForm";
 import DeleteCategoryModal from "../../components/cms/DeleteCategoryModal";
 import IconPreview from "../../components/cms/IconPreview";
 import StatusConfirmModal from "../../components/cms/StatusConfirmModal";
@@ -25,10 +26,6 @@ import VisibilityButton from "../../components/cms/VisibilityButton";
 
 export default function CategoryPage() {
     const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] =
-        useState(null);
-
-    const [formMode, setFormMode] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [actionError, setActionError] = useState("");
@@ -68,19 +65,6 @@ export default function CategoryPage() {
 
                 setCategories(data);
 
-                setSelectedCategory(
-                    (current) => {
-                        if (!current) return current;
-
-                        return (
-                            data.find(
-                                (category) =>
-                                    category.id ===
-                                    current.id
-                            ) ?? null
-                        );
-                    }
-                );
             } catch (err) {
                 if (active) {
                     setCategories([]);
@@ -97,28 +81,6 @@ export default function CategoryPage() {
             active = false;
         };
     }, [refreshKey]);
-
-    function handleAddCategory() {
-        setSelectedCategory(null);
-        setFormMode("create");
-        setSuccess("");
-    }
-
-    function handleEditCategory(category) {
-        setSelectedCategory(category);
-        setFormMode("edit");
-        setSuccess("");
-    }
-
-    function handleSaved(category, message) {
-        setSuccess(
-            message || "Kategori berhasil disimpan."
-        );
-
-        setSelectedCategory(category);
-        setFormMode("edit");
-        setRefreshKey((current) => current + 1);
-    }
 
     function handleOpenDelete(category) {
         setCategoryToDelete(category);
@@ -149,14 +111,6 @@ export default function CategoryPage() {
             await deleteCmsCategory(
                 categoryToDelete.id
             );
-
-            if (
-                selectedCategory?.id ===
-                categoryToDelete.id
-            ) {
-                setSelectedCategory(null);
-                setFormMode(null);
-            }
 
             setCategoryToDelete(null);
             setSuccess(
@@ -193,11 +147,6 @@ export default function CategoryPage() {
                         ? { ...item, ...updatedCategory }
                         : item
                 )
-            );
-            setSelectedCategory((current) =>
-                current?.id === category.id
-                    ? { ...current, ...updatedCategory }
-                    : current
             );
             setSuccess(result?.message ?? "Status kategori berhasil diperbarui.");
             setCategoryToChangeStatus(null);
@@ -236,14 +185,13 @@ export default function CategoryPage() {
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={handleAddCategory}
+                <Link
+                    to="/categories/new"
                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700"
                 >
                     <Plus size={20} />
                     Tambah Kategori
-                </button>
+                </Link>
             </div>
 
             {success && (
@@ -273,12 +221,7 @@ export default function CategoryPage() {
                 </div>
             )}
 
-            <div
-                className={`mt-8 grid gap-6 ${formMode
-                        ? "xl:grid-cols-[minmax(0,1fr)_420px]"
-                        : ""
-                    }`}
-            >
+            <div className="mt-8">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
                     <div className="flex items-center justify-between">
                         <div>
@@ -316,19 +259,12 @@ export default function CategoryPage() {
                                             category.subcategoryCount
                                         ) || 0;
 
-                                    const active =
-                                        selectedCategory?.id ===
-                                        category.id;
-
                                     return (
                                         <article
                                             key={
                                                 category.id
                                             }
-                                            className={`flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between ${active
-                                                    ? "border-blue-300 bg-blue-50"
-                                                    : "border-slate-200"
-                                                }`}
+                                            className="flex flex-col gap-4 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
                                         >
                                             <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center">
                                                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-50 p-1.5 text-blue-600">
@@ -382,13 +318,8 @@ export default function CategoryPage() {
                                                     loading={changingStatusId === category.id}
                                                     onClick={() => handleStatusRequest(category)}
                                                 />
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        handleEditCategory(
-                                                            category
-                                                        )
-                                                    }
+                                                <Link
+                                                    to={`/categories/${category.id}/edit`}
                                                     aria-label={`Edit ${category.name}`}
                                                     className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
                                                 >
@@ -397,7 +328,7 @@ export default function CategoryPage() {
                                                             18
                                                         }
                                                     />
-                                                </button>
+                                                </Link>
 
                                                 <button
                                                     type="button"
@@ -430,22 +361,6 @@ export default function CategoryPage() {
                     )}
                 </div>
 
-                {formMode && (
-                    <CategoryForm
-                        key={
-                            formMode === "edit"
-                                ? selectedCategory?.id
-                                : "new-category"
-                        }
-                        mode={formMode}
-                        category={selectedCategory}
-                        onCancel={() => {
-                            setFormMode(null);
-                            setSelectedCategory(null);
-                        }}
-                        onSaved={handleSaved}
-                    />
-                )}
             </div>
 
             <DeleteCategoryModal

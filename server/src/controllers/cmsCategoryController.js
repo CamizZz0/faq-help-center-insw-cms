@@ -217,15 +217,12 @@ export async function createCmsCategory(req, res) {
 
         const {
             name,
-            slug,
             description = "",
             icon = "",
         } = body;
 
         const cleanName = String(name ?? "").trim();
-        const cleanSlug = createSlug(
-            slug || cleanName
-        );
+        const cleanSlug = createSlug(cleanName);
 
         const isActive = parseBooleanField(
             body.isActive === undefined
@@ -375,6 +372,13 @@ export async function updateCmsCategory(req, res) {
 
         const body = req.body ?? {};
 
+        if (body.slug !== undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Slug kategori dibuat otomatis dan tidak dapat diubah.",
+            });
+        }
+
         const iconSourceError =
             rejectIconSourceFields(body);
 
@@ -401,38 +405,6 @@ export async function updateCmsCategory(req, res) {
             }
 
             updates.name = name;
-        }
-
-        if (body.slug !== undefined) {
-            const slug = createSlug(body.slug);
-
-            if (!slug) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Slug kategori tidak valid",
-                });
-            }
-
-            const [slugOwner] = await db
-                .select({
-                    id: categories.id,
-                })
-                .from(categories)
-                .where(eq(categories.slug, slug))
-                .limit(1);
-
-            if (
-                slugOwner &&
-                slugOwner.id !== id
-            ) {
-                return res.status(409).json({
-                    success: false,
-                    message:
-                        "Slug kategori sudah digunakan",
-                });
-            }
-
-            updates.slug = slug;
         }
 
         if (body.description !== undefined) {

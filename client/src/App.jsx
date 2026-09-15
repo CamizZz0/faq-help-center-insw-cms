@@ -8,6 +8,7 @@ import DashboardPage from "./pages/cms/DashboardPage";
 import FaqListPage from "./pages/cms/FaqListPage";
 import FaqFormPage from "./pages/cms/FaqFormPage";
 import CategoryPage from "./pages/cms/CategoryPage";
+import CategoryFormPage from "./pages/cms/CategoryFormPage";
 import SubcategoryListPage from "./pages/cms/SubcategoryListPage";
 import SubcategoryFormPage from "./pages/cms/SubcategoryFormPage";
 import TopicListPage from "./pages/cms/TopicListPage";
@@ -30,6 +31,9 @@ export default function App() {
           path="categories"
           element={<CategoryPage />}
         />
+
+        <Route path="categories/new" element={<CategoryFormPage />} />
+        <Route path="categories/:categoryId/edit" element={<CategoryFormPage />} />
 
         <Route
           path="subcategories"
