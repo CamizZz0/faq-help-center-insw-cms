@@ -4,6 +4,7 @@ import {
     count,
     eq,
     ilike,
+    inArray,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
@@ -16,6 +17,11 @@ import {
     subcategories,
     tutorials,
 } from "../models/schema.js";
+
+import {
+    normalizeViewerRole,
+    visibleVisibilitiesForRole,
+} from "../utils/faqVisibility.js";
 
 import {
     guideForResponse,
@@ -122,16 +128,26 @@ export async function searchHelpCenter(req, res) {
     const pattern =
         `%${escapedQuery}%`;
 
+    // SIMULASI DEMO (bukan autentikasi): viewerRole=guest|authenticated.
+    // TODO(auth): hapus param ini; filter visibility di backend dari sesi/JWT.
+    const viewerRole = normalizeViewerRole(req.query.viewerRole);
+    const allowedVisibilities = visibleVisibilitiesForRole(viewerRole);
+
+    const faqVisibilityConditions = [
+        eq(faqs.isPublished, true),
+        inArray(faqs.visibility, allowedVisibilities),
+    ];
+
     /*
      * Pencarian FAQ hanya berdasarkan judul
      * pertanyaan, yaitu faqs.question.
      */
     const faqFilter = and(
-        eq(faqs.isPublished, true),
         eq(faqTopics.isActive, true),
         eq(subcategories.isActive, true),
         eq(categories.isActive, true),
         ilike(faqs.question, pattern),
+        ...faqVisibilityConditions,
     );
 
     /*
@@ -274,6 +290,10 @@ export async function searchHelpCenter(req, res) {
                           answer: faqs.answer,
                           isPopular:
                               faqs.isPopular,
+                          isPublished:
+                              faqs.isPublished,
+                          visibility:
+                              faqs.visibility,
 
                           category: {
                               name: categories.name,

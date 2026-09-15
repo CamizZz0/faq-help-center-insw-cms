@@ -13,6 +13,11 @@ import {
 
 import FaqAnswerEditor from "../../components/cms/FaqAnswerEditor";
 
+import {
+    FAQ_VISIBILITY_OPTIONS,
+    normalizeVisibility,
+} from "../../utils/faqVisibility";
+
 function extractList(result, key) {
     if (Array.isArray(result?.data)) return result.data;
     if (Array.isArray(result?.data?.[key])) return result.data[key];
@@ -54,6 +59,7 @@ function FaqForm({ faqId }) {
         answer: "",
         isPopular: false,
         isPublished: false,
+        visibility: "public",
     });
 
     const [loading, setLoading] = useState(true);
@@ -127,6 +133,7 @@ function FaqForm({ faqId }) {
                     answer: faq.answer ?? "",
                     isPopular: faq.isPopular,
                     isPublished: faq.isPublished,
+                    visibility: normalizeVisibility(faq.visibility),
                 });
             } catch (err) {
                 if (active) setLoadError(err.message);
@@ -257,6 +264,7 @@ function FaqForm({ faqId }) {
             answer: form.answer,
             isPopular: form.isPopular,
             isPublished: form.isPublished,
+            visibility: normalizeVisibility(form.visibility),
         };
 
         try {
@@ -400,6 +408,34 @@ function FaqForm({ faqId }) {
                         </Field>
 
                     </div>
+
+                    <Field label="Visibilitas FAQ *" htmlFor="visibility">
+                        <select
+                            id="visibility"
+                            value={form.visibility}
+                            onChange={(event) =>
+                                updateField(
+                                    "visibility",
+                                    normalizeVisibility(event.target.value)
+                                )
+                            }
+                            required
+                            className={inputClass}
+                        >
+                            {FAQ_VISIBILITY_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+
+                        <p className="mt-2 text-sm text-slate-500">
+                            {FAQ_VISIBILITY_OPTIONS.find(
+                                (option) => option.value === form.visibility
+                            )?.help ?? ""}
+                            {" "}Draft (tidak diterbitkan) tetap tersembunyi dari publik apa pun visibilitasnya.
+                        </p>
+                    </Field>
 
                     <Field label="Pertanyaan *" htmlFor="question">
                         <input

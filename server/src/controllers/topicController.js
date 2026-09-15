@@ -3,6 +3,7 @@ import {
     asc,
     count,
     eq,
+    inArray,
 } from "drizzle-orm";
 
 import { db } from "../config/db.js";
@@ -14,12 +15,25 @@ import {
     faqs,
 } from "../models/schema.js";
 
+import {
+    normalizeViewerRole,
+    visibleVisibilitiesForRole,
+    getLockedMetadata,
+    getVisibilityCounts,
+} from "../utils/faqVisibility.js";
+
 export async function getFaqsByTopic(req, res) {
     try {
         const { topicSlug } = req.params;
 
         const page = Number(req.query.page ?? 1);
         const limit = Number(req.query.limit ?? 6);
+
+        // SIMULASI DEMO (bukan autentikasi). Lihat faqController.js.
+        // TODO(auth): hapus viewerRole, gunakan identitas terautentikasi.
+        const viewerRole = normalizeViewerRole(req.query.viewerRole);
+        const allowedVisibilities =
+            visibleVisibilitiesForRole(viewerRole);
 
         if (
             !Number.isInteger(page) ||
@@ -118,13 +132,19 @@ export async function getFaqsByTopic(req, res) {
             });
         }
 
-        const filter = and(
+        const faqConditions = [
             eq(
                 faqs.topicId,
                 topicContext.topic.id
             ),
-            eq(faqs.isPublished, true)
+        ];
+
+        faqConditions.push(eq(faqs.isPublished, true));
+        faqConditions.push(
+            inArray(faqs.visibility, allowedVisibilities),
         );
+
+        const filter = and(...faqConditions);
 
         /*
          * Menghitung seluruh FAQ pada topik.
@@ -151,6 +171,8 @@ export async function getFaqsByTopic(req, res) {
                 question: faqs.question,
                 answer: faqs.answer,
                 isPopular: faqs.isPopular,
+                isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
 
                 topic: {
@@ -195,6 +217,30 @@ export async function getFaqsByTopic(req, res) {
             .limit(limit)
             .offset(offset);
 
+        /*
+         * Metadata demo: seluruh FAQ topik (tanpa pagination) dipakai untuk
+         * menghitung ringkasan visibilitas dan daftar terkunci.
+         * `locked` TIDAK memuat `answer` agar jawaban tidak bocor via network.
+         * TODO(auth): pertahankan pola ini setelah autentikasi resmi tersedia.
+         */
+        const allTopicFaqs = await db
+            .select({
+                id: faqs.id,
+                question: faqs.question,
+                isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
+            })
+            .from(faqs)
+            .where(
+                eq(
+                    faqs.topicId,
+                    topicContext.topic.id
+                )
+            );
+
+        const visibilityCounts = getVisibilityCounts(allTopicFaqs);
+        const locked = getLockedMetadata(allTopicFaqs, viewerRole);
+
         return res.status(200).json({
             success: true,
             message: "FAQ berhasil diambil",
@@ -205,6 +251,7 @@ export async function getFaqsByTopic(req, res) {
                 category:
                     topicContext.category,
                 faqs: faqData,
+                locked,
             },
             meta: {
                 page,
@@ -214,6 +261,7 @@ export async function getFaqsByTopic(req, res) {
                 hasNextPage:
                     page < totalPages,
                 hasPreviousPage: page > 1,
+                visibilityCounts,
             },
         });
     } catch (error) {

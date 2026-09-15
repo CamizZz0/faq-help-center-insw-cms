@@ -293,6 +293,7 @@ export async function getCmsTopicFaqs(req, res) {
                 id: faqs.id,
                 question: faqs.question,
                 isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
             })
             .from(faqs)

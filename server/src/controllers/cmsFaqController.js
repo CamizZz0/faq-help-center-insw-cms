@@ -19,6 +19,11 @@ import {
 
 import sanitizeHtml from "sanitize-html";
 
+import {
+    normalizeVisibility,
+    FAQ_VISIBILITIES,
+} from "../utils/faqVisibility.js";
+
 function parsePositiveId(value) {
     if (!/^\d+$/.test(String(value))) return null;
 
@@ -48,6 +53,10 @@ export async function getCmsFaqs(req, res) {
             req.query.status ?? ""
         ).trim();
 
+        const visibilityFilter = String(
+            req.query.visibility ?? ""
+        ).trim().toLowerCase();
+
         const page = Number(req.query.page ?? 1);
         const limit = Number(req.query.limit ?? 10);
 
@@ -73,6 +82,17 @@ export async function getCmsFaqs(req, res) {
                 success: false,
                 message:
                     "Status harus bernilai published atau draft",
+            });
+        }
+
+        if (
+            visibilityFilter &&
+            !FAQ_VISIBILITIES.includes(visibilityFilter)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Visibility harus bernilai public atau authenticated",
             });
         }
 
@@ -129,6 +149,12 @@ export async function getCmsFaqs(req, res) {
             );
         }
 
+        if (visibilityFilter) {
+            conditions.push(
+                eq(faqs.visibility, visibilityFilter)
+            );
+        }
+
         const filter =
             conditions.length > 0
                 ? and(...conditions)
@@ -171,6 +197,7 @@ export async function getCmsFaqs(req, res) {
                 answer: faqs.answer,
                 isPopular: faqs.isPopular,
                 isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
                 createdAt: faqs.createdAt,
                 updatedAt: faqs.updatedAt,
@@ -310,6 +337,7 @@ export async function createCmsFaq(req, res) {
             answer,
             isPopular = false,
             isPublished = false,
+            visibility = "public",
         } = req.body;
 
         if (req.body.sortOrder !== undefined) {
@@ -371,6 +399,16 @@ export async function createCmsFaq(req, res) {
             });
         }
 
+        if (!FAQ_VISIBILITIES.includes(String(visibility ?? "").trim().toLowerCase())) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "visibility harus bernilai public atau authenticated",
+            });
+        }
+
+        const normalizedVisibility = normalizeVisibility(visibility);
+
         const [topic] = await db
             .select({
                 id: faqTopics.id,
@@ -409,6 +447,7 @@ export async function createCmsFaq(req, res) {
                 answer: sanitizedAnswer,
                 isPopular,
                 isPublished,
+                visibility: normalizedVisibility,
                 sortOrder: nextSortOrder,
             })
             .returning({
@@ -418,6 +457,7 @@ export async function createCmsFaq(req, res) {
                 answer: faqs.answer,
                 isPopular: faqs.isPopular,
                 isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
                 createdAt: faqs.createdAt,
                 updatedAt: faqs.updatedAt,
@@ -463,6 +503,7 @@ export async function getCmsFaqById(req, res) {
                 answer: faqs.answer,
                 isPopular: faqs.isPopular,
                 isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
 
                 topic: {
@@ -642,6 +683,21 @@ export async function updateCmsFaq(req, res) {
             }
         }
 
+        if (body.visibility !== undefined) {
+            if (
+                typeof body.visibility !== "string" ||
+                !FAQ_VISIBILITIES.includes(body.visibility.trim().toLowerCase())
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "visibility harus bernilai public atau authenticated",
+                });
+            }
+
+            updates.visibility = normalizeVisibility(body.visibility);
+        }
+
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({
                 success: false,
@@ -662,6 +718,7 @@ export async function updateCmsFaq(req, res) {
                 answer: faqs.answer,
                 isPopular: faqs.isPopular,
                 isPublished: faqs.isPublished,
+                visibility: faqs.visibility,
                 sortOrder: faqs.sortOrder,
                 updatedAt: faqs.updatedAt,
             });

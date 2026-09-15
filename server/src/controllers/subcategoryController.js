@@ -1,13 +1,23 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq, inArray } from "drizzle-orm";
 import { db } from "../config/db.js";
 import {
     subcategories,
     faqTopics,
+    faqs,
 } from "../models/schema.js";
+import {
+    normalizeViewerRole,
+    canViewerSeeFaq,
+} from "../utils/faqVisibility.js";
 
 export async function getTopicsBySubcategory(req, res) {
     try {
         const { subcategorySlug } = req.params;
+
+        // SIMULASI DEMO (bukan autentikasi): hitungan FAQ per topik
+        // mengikuti role agar badge sidebar berubah saat role diganti.
+        // TODO(auth): hapus viewerRole, gunakan identitas terautentikasi.
+        const viewerRole = normalizeViewerRole(req.query.viewerRole);
 
         const [subcategory] = await db
             .select({
@@ -51,12 +61,63 @@ export async function getTopicsBySubcategory(req, res) {
             )
             .orderBy(asc(faqTopics.sortOrder));
 
+        /*
+         * Hitungan FAQ per topik untuk badge sidebar demo.
+         * Dikelompokkan per (visibility, isPublished) lalu dinilai dengan
+         * aturan simulasi yang sama seperti endpoint lain — tanpa mengirim
+         * jawaban FAQ apa pun.
+         */
+        const topicIds = topicData.map((topic) => topic.id);
+
+        let faqCountByTopic = {};
+        let restrictedByTopic = {};
+
+        if (topicIds.length > 0) {
+            const groups = await db
+                .select({
+                    topicId: faqs.topicId,
+                    visibility: faqs.visibility,
+                    isPublished: faqs.isPublished,
+                    total: count(),
+                })
+                .from(faqs)
+                .where(inArray(faqs.topicId, topicIds))
+                .groupBy(
+                    faqs.topicId,
+                    faqs.visibility,
+                    faqs.isPublished,
+                );
+
+            for (const row of groups) {
+                const key = row.topicId;
+                const total = Number(row.total ?? 0);
+                const probe = {
+                    visibility: row.visibility,
+                    isPublished: row.isPublished,
+                };
+
+                faqCountByTopic[key] =
+                    (faqCountByTopic[key] ?? 0) +
+                    (canViewerSeeFaq(probe, viewerRole) ? total : 0);
+
+                if (!canViewerSeeFaq(probe, viewerRole) && total > 0) {
+                    restrictedByTopic[key] = true;
+                }
+            }
+        }
+
+        const topicsWithCounts = topicData.map((topic) => ({
+            ...topic,
+            faqCount: faqCountByTopic[topic.id] ?? 0,
+            hasRestricted: Boolean(restrictedByTopic[topic.id]),
+        }));
+
         return res.status(200).json({
             success: true,
             message: "Topik FAQ berhasil diambil",
             data: {
                 subcategory,
-                topics: topicData,
+                topics: topicsWithCounts,
             },
         });
     } catch (error) {

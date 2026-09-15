@@ -398,7 +398,7 @@ async function saveFaq(
 
     await tx
         .insert(faqs)
-        .values(faqValues);
+        .values({ ...faqValues, visibility: "public" });
 }
 
 async function importFaqs() {

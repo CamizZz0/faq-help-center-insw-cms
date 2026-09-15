@@ -127,6 +127,7 @@ export async function getCmsDashboard(req, res) {
                     id: faqs.id,
                     question: faqs.question,
                     isPublished: faqs.isPublished,
+                    visibility: faqs.visibility,
                     updatedAt: faqs.updatedAt,
 
                     topic: {

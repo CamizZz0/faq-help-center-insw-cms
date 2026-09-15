@@ -25,6 +25,20 @@ import DeleteFaqModal from "../../components/cms/DeleteFaqModal";
 import PopularButton from "../../components/cms/PopularButton";
 import VisibilityButton from "../../components/cms/VisibilityButton";
 
+import { getVisibilityMeta } from "../../utils/faqVisibility";
+
+function VisibilityBadge({ value }) {
+    const meta = getVisibilityMeta(value);
+
+    return (
+        <span
+            className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${meta.badgeClass}`}
+        >
+            {meta.badge}
+        </span>
+    );
+}
+
 function extractCategories(result) {
     if (Array.isArray(result?.data)) {
         return result.data;
@@ -78,6 +92,7 @@ export default function FaqListPage() {
     const categorySlug = searchParams.get("category") ?? "";
     const topicId = searchParams.get("topic") ?? "";
     const status = searchParams.get("status") ?? "";
+    const visibility = searchParams.get("visibility") ?? "";
     const page = readPage(searchParams.get("page"));
     const [faqs, setFaqs] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -197,6 +212,7 @@ export default function FaqListPage() {
                     category: categorySlug,
                     topic: topicId,
                     status,
+                    visibility,
                     page,
                     limit: 10,
                 });
@@ -252,6 +268,7 @@ export default function FaqListPage() {
         categorySlug,
         topicId,
         status,
+        visibility,
         page,
         refreshKey,
         updateFilterParameters,
@@ -291,6 +308,10 @@ export default function FaqListPage() {
 
     function handleStatusChange(event) {
         updateFilterParameters({ status: event.target.value, page: 1 });
+    }
+
+    function handleVisibilityChange(event) {
+        updateFilterParameters({ visibility: event.target.value, page: 1 });
     }
 
     function handlePreviousPage() {
@@ -444,7 +465,7 @@ export default function FaqListPage() {
             </div>
 
             <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_200px_200px_180px]">
+                <div className="grid gap-4 lg:grid-cols-[minmax(220px,1fr)_180px_180px_160px_180px]">
                     <FaqSearchInput
                         key={search}
                         search={search}
@@ -493,6 +514,17 @@ export default function FaqListPage() {
                         <option value="">Semua status</option>
                         <option value="published">Terbit</option>
                         <option value="draft">Draf</option>
+                    </select>
+
+                    <select
+                        aria-label="Filter visibilitas"
+                        value={visibility}
+                        onChange={handleVisibilityChange}
+                        className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                    >
+                        <option value="">Semua visibilitas</option>
+                        <option value="public">Publik</option>
+                        <option value="authenticated">Pengguna terdaftar</option>
                     </select>
                 </div>
 
@@ -591,16 +623,26 @@ export default function FaqListPage() {
                                         {faq.question}
                                     </p>
 
-                                    <span
-                                        className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                                            faq.isPublished
-                                                ? "bg-emerald-100 text-emerald-700"
-                                                : "bg-amber-100 text-amber-700"
-                                        }`}
-                                    >
-                                        {faq.isPublished
-                                            ? "Terbit"
-                                            : "Draf"}
+                                    <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                                        <span
+                                            className={`inline-flex shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                                                faq.isPublished
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : "bg-amber-100 text-amber-700"
+                                            }`}
+                                        >
+                                            {faq.isPublished
+                                                ? "Terbit"
+                                                : "Draf"}
+                                        </span>
+
+                                        <VisibilityBadge value={faq.visibility} />
+
+                                        {faq.isPopular && (
+                                            <span className="inline-flex shrink-0 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                                                Populer
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
 
@@ -760,15 +802,25 @@ export default function FaqListPage() {
                                         </td>
 
                                         <td className="px-4 py-4">
-                                            <span
-                                                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${faq.isPublished
-                                                        ? "bg-emerald-100 text-emerald-700"
-                                                        : "bg-amber-100 text-amber-700"
-                                                    }`}
-                                            >
-                                                {faq.isPublished
-                                                    ? "Terbit"
-                                                    : "Draf"}
+                                            <span className="flex flex-wrap gap-1.5">
+                                                <span
+                                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${faq.isPublished
+                                                            ? "bg-emerald-100 text-emerald-700"
+                                                            : "bg-amber-100 text-amber-700"
+                                                        }`}
+                                                >
+                                                    {faq.isPublished
+                                                        ? "Terbit"
+                                                        : "Draf"}
+                                                </span>
+
+                                                <VisibilityBadge value={faq.visibility} />
+
+                                                {faq.isPopular && (
+                                                    <span className="inline-flex rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                                                        Populer
+                                                    </span>
+                                                )}
                                             </span>
                                         </td>
 

@@ -135,6 +135,10 @@ export const faqs = pgTable("faqs", {
 
     isPublished: boolean("is_published").notNull().default(true),
 
+    visibility: varchar("visibility", { length: 20 })
+        .notNull()
+        .default("public"),
+
     createdAt: timestamp("created_at", {
         withTimezone: true,
     })
