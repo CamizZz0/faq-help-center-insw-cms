@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
     createCmsFaq,
     getCmsFaqById,
+    getCmsFaqVersions,
     updateCmsFaq,
     getCategories,
     getSubcategories,
@@ -68,6 +69,7 @@ function FaqForm({ faqId }) {
     const [loadingSubcategories, setLoadingSubcategories] = useState(false);
     const [loadingTopics, setLoadingTopics] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [versions, setVersions] = useState([]);
 
     const subcategoryRequest = useRef(0);
     const topicRequest = useRef(0);
@@ -88,6 +90,11 @@ function FaqForm({ faqId }) {
                 ]);
 
                 if (!active) return;
+
+                if (faqId) {
+                    const versionResult = await getCmsFaqVersions(faqId);
+                    if (active) setVersions(versionResult?.data ?? []);
+                }
 
                 const categoryList = extractList(categoryResult, "categories");
 
@@ -265,6 +272,7 @@ function FaqForm({ faqId }) {
             isPopular: form.isPopular,
             isPublished: form.isPublished,
             visibility: normalizeVisibility(form.visibility),
+            changeSummary: form.changeSummary?.trim() ?? "",
         };
 
         try {
@@ -466,6 +474,10 @@ function FaqForm({ faqId }) {
                             Gunakan toolbar untuk mengatur format jawaban.
                         </p>
                     </div>
+
+                    {isEdit && <Field label="Ringkasan perubahan" htmlFor="change-summary"><input id="change-summary" value={form.changeSummary ?? ""} onChange={(event) => updateField("changeSummary", event.target.value)} placeholder="Contoh: Memperbarui langkah pengajuan" className={inputClass} /></Field>}
+
+                    {isEdit && versions.length > 0 && <div className="rounded-xl border border-slate-200 p-4"><h2 className="font-semibold text-slate-900">Riwayat perubahan</h2><ul className="mt-3 space-y-2 text-sm text-slate-600">{versions.map((version) => <li key={version.id}>{new Date(version.createdAt).toLocaleString("id-ID")} — {version.changeSummary || "FAQ diperbarui"}</li>)}</ul></div>}
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4">

@@ -273,3 +273,12 @@ export const faqFeedback = pgTable(
         index("faq_feedback_created_at_idx").on(table.createdAt),
     ],
 );
+
+export const faqVersions = pgTable("faq_versions", {
+    id: serial("id").primaryKey(),
+    faqId: integer("faq_id").notNull().references(() => faqs.id, { onDelete: "cascade" }),
+    question: text("question").notNull(),
+    answer: text("answer").notNull(),
+    changeSummary: text("change_summary"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

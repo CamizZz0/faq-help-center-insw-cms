@@ -15,6 +15,7 @@ import {
     subcategories,
     faqTopics,
     faqs,
+    faqVersions,
 } from "../models/schema.js";
 
 import sanitizeHtml from "sanitize-html";
@@ -574,7 +575,7 @@ export async function updateCmsFaq(req, res) {
         }
 
         const [existingFaq] = await db
-            .select({ id: faqs.id })
+            .select({ id: faqs.id, question: faqs.question, answer: faqs.answer })
             .from(faqs)
             .where(eq(faqs.id, id))
             .limit(1);
@@ -705,6 +706,17 @@ export async function updateCmsFaq(req, res) {
             });
         }
 
+        const changeSummary = typeof body.changeSummary === "string"
+            ? body.changeSummary.trim().slice(0, 500)
+            : null;
+
+        await db.insert(faqVersions).values({
+            faqId: id,
+            question: existingFaq.question,
+            answer: existingFaq.answer,
+            changeSummary: changeSummary || null,
+        });
+
         updates.updatedAt = new Date();
 
         const [updatedFaq] = await db
@@ -782,5 +794,19 @@ export async function deleteCmsFaq(req, res) {
             success: false,
             message: "Terjadi kesalahan saat menghapus FAQ",
         });
+    }
+}
+
+export async function getCmsFaqVersions(req, res) {
+    const id = parsePositiveId(req.params.id);
+    if (!id) return res.status(400).json({ success: false, message: "ID FAQ tidak valid" });
+    try {
+        const data = await db.select().from(faqVersions)
+            .where(eq(faqVersions.faqId, id))
+            .orderBy(asc(faqVersions.createdAt));
+        return res.status(200).json({ success: true, data });
+    } catch (error) {
+        console.error("Gagal mengambil riwayat FAQ:", error);
+        return res.status(500).json({ success: false, message: "Riwayat FAQ tidak dapat diambil" });
     }
 }
