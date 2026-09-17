@@ -9,7 +9,7 @@ import {
     faqs,
     guides,
     tutorials,
-    faqFeedback,
+    contentFeedback,
 } from "../models/schema.js";
 
 const RECENT_LIMIT = 5;
@@ -28,6 +28,44 @@ async function resolveTotal(query) {
     const [row] = await query;
 
     return Number(row?.total ?? 0);
+}
+
+/*
+ * Mengubah hasil query feedback yang dikelompokkan per content_type
+ * menjadi angka siap pakai, lengkap dengan rincian per jenis konten.
+ */
+function ringkasFeedback(rows) {
+    const jenisBaru = () => ({ total: 0, helpful: 0, notHelpful: 0 });
+    const byType = { faq: jenisBaru(), guide: jenisBaru(), tutorial: jenisBaru() };
+
+    const total = { total: 0, helpful: 0, notHelpful: 0 };
+
+    for (const row of rows) {
+        const jenis = byType[row.contentType];
+        if (!jenis) continue;
+
+        jenis.total = Number(row.total ?? 0);
+        jenis.helpful = Number(row.helpful ?? 0);
+        jenis.notHelpful = Number(row.notHelpful ?? 0);
+
+        total.total += jenis.total;
+        total.helpful += jenis.helpful;
+        total.notHelpful += jenis.notHelpful;
+    }
+
+    return { ...total, byType };
+}
+
+/*
+ * Menyeragamkan daftar konten dengan feedback negatif terbanyak.
+ */
+function rapikanDaftarNegatif(rows) {
+    return rows.map((row) => ({
+        contentId: row.contentId,
+        title: row.title,
+        total: Number(row.total ?? 0),
+        notHelpful: Number(row.notHelpful ?? 0),
+    }));
 }
 
 export async function getCmsDashboard(req, res) {
@@ -55,6 +93,8 @@ export async function getCmsDashboard(req, res) {
             recentTutorials,
             feedbackSummary,
             negativeFeedbackFaqs,
+            negativeFeedbackGuides,
+            negativeFeedbackTutorials,
         ] = await Promise.all([
             resolveTotal(
                 countRows(
@@ -194,23 +234,54 @@ export async function getCmsDashboard(req, res) {
 
             db
                 .select({
-                    total: count(faqFeedback.id),
-                    helpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = true)`,
-                    notHelpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`,
+                    contentType: contentFeedback.contentType,
+                    total: count(contentFeedback.id),
+                    helpful: sql`count(*) filter (where ${contentFeedback.isHelpful} = true)`,
+                    notHelpful: sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`,
                 })
-                .from(faqFeedback),
+                .from(contentFeedback)
+                .groupBy(contentFeedback.contentType),
 
             db
                 .select({
-                    faqId: faqs.id,
-                    question: faqs.question,
-                    total: count(faqFeedback.id),
-                    notHelpful: sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`,
+                    contentId: faqs.id,
+                    title: faqs.question,
+                    total: count(contentFeedback.id),
+                    notHelpful: sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`,
                 })
-                .from(faqFeedback)
-                .innerJoin(faqs, eq(faqFeedback.faqId, faqs.id))
+                .from(contentFeedback)
+                .innerJoin(faqs, eq(contentFeedback.contentId, faqs.id))
+                .where(eq(contentFeedback.contentType, "faq"))
                 .groupBy(faqs.id, faqs.question)
-                .orderBy(desc(sql`count(*) filter (where ${faqFeedback.isHelpful} = false)`))
+                .orderBy(desc(sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`))
+                .limit(RECENT_LIMIT),
+
+            db
+                .select({
+                    contentId: guides.id,
+                    title: guides.title,
+                    total: count(contentFeedback.id),
+                    notHelpful: sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`,
+                })
+                .from(contentFeedback)
+                .innerJoin(guides, eq(contentFeedback.contentId, guides.id))
+                .where(eq(contentFeedback.contentType, "guide"))
+                .groupBy(guides.id, guides.title)
+                .orderBy(desc(sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`))
+                .limit(RECENT_LIMIT),
+
+            db
+                .select({
+                    contentId: tutorials.id,
+                    title: tutorials.title,
+                    total: count(contentFeedback.id),
+                    notHelpful: sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`,
+                })
+                .from(contentFeedback)
+                .innerJoin(tutorials, eq(contentFeedback.contentId, tutorials.id))
+                .where(eq(contentFeedback.contentType, "tutorial"))
+                .groupBy(tutorials.id, tutorials.title)
+                .orderBy(desc(sql`count(*) filter (where ${contentFeedback.isHelpful} = false)`))
                 .limit(RECENT_LIMIT),
         ]);
 
@@ -242,11 +313,7 @@ export async function getCmsDashboard(req, res) {
                         draft: draftTutorials,
                     },
 
-                    feedback: {
-                        total: Number(feedbackSummary?.[0]?.total ?? 0),
-                        helpful: Number(feedbackSummary?.[0]?.helpful ?? 0),
-                        notHelpful: Number(feedbackSummary?.[0]?.notHelpful ?? 0),
-                    },
+                    feedback: ringkasFeedback(feedbackSummary),
                 },
 
                 recentContent: {
@@ -255,11 +322,9 @@ export async function getCmsDashboard(req, res) {
                     tutorials: recentTutorials,
                 },
 
-                negativeFeedbackFaqs: negativeFeedbackFaqs.map((faq) => ({
-                    ...faq,
-                    total: Number(faq.total ?? 0),
-                    notHelpful: Number(faq.notHelpful ?? 0),
-                })),
+                negativeFeedbackFaqs: rapikanDaftarNegatif(negativeFeedbackFaqs),
+                negativeFeedbackGuides: rapikanDaftarNegatif(negativeFeedbackGuides),
+                negativeFeedbackTutorials: rapikanDaftarNegatif(negativeFeedbackTutorials),
             },
         });
     } catch (error) {

@@ -59,6 +59,12 @@ export function getCmsDashboard() {
     return request("/cms/dashboard");
 }
 
+export function getFeedbackReasons(contentType, contentId, limit = 10) {
+    return request(
+        `/cms/dashboard/feedback/${encodeURIComponent(contentType)}/${encodeURIComponent(contentId)}/reasons?limit=${encodeURIComponent(limit)}`
+    );
+}
+
 export function getCmsFaqs(params = {}) {
     return request(
         `/cms/faqs${createQuery(params)}`

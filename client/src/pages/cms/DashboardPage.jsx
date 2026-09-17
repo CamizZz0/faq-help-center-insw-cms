@@ -15,7 +15,7 @@ import {
     ThumbsUp,
 } from "lucide-react";
 
-import { getCmsDashboard } from "../../services/api";
+import { getCmsDashboard, getFeedbackReasons } from "../../services/api";
 
 const statCards = [
     {
@@ -221,19 +221,129 @@ function EmptyRecent({ label }) {
     );
 }
 
-function FeedbackOverview({ feedback, negativeFaqs }) {
+const feedbackGroups = [
+    {
+        key: "faq",
+        label: "FAQ",
+        icon: MessageCircleQuestion,
+        emptyLabel: "Belum ada feedback negatif untuk FAQ.",
+        editPath: (id) => `/faqs/${id}/edit`,
+    },
+    {
+        key: "guide",
+        label: "Panduan",
+        icon: BookOpen,
+        emptyLabel: "Belum ada feedback negatif untuk panduan.",
+        editPath: (id) => `/guides/${id}/edit`,
+    },
+    {
+        key: "tutorial",
+        label: "Tutorial",
+        icon: PlayCircle,
+        emptyLabel: "Belum ada feedback negatif untuk tutorial.",
+        editPath: (id) => `/tutorials/${id}/edit`,
+    },
+];
+
+const rasioKosong = { total: 0, helpful: 0, notHelpful: 0 };
+
+function hitungRasio({ total, helpful }) {
+    return total > 0 ? Math.round((helpful / total) * 100) : 0;
+}
+
+function warnaRasio(persen) {
+    if (persen >= 80) return "bg-emerald-500";
+    if (persen >= 60) return "bg-amber-500";
+    return "bg-rose-500";
+}
+
+function BarRasio({ persen }) {
+    return (
+        <div
+            className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
+            role="img"
+            aria-label={`${persen} persen feedback membantu`}
+        >
+            <div
+                className={`h-full rounded-full ${warnaRasio(persen)}`}
+                style={{ width: `${persen}%` }}
+            />
+        </div>
+    );
+}
+
+function ReasonList({ contentType, contentId }) {
+    const [reasons, setReasons] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [error, setError] = useState("");
+
+    async function toggle() {
+        if (open) {
+            setOpen(false);
+            return;
+        }
+        setOpen(true);
+        if (reasons !== null) return;
+        try {
+            setLoading(true);
+            setError("");
+            const res = await getFeedbackReasons(contentType, contentId, 10);
+            setReasons(res?.data ?? []);
+        } catch (err) {
+            setError(err.message || "Gagal memuat alasan.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <div className="mt-2">
+            <button
+                type="button"
+                onClick={toggle}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+            >
+                {open ? "Sembunyikan alasan" : "Lihat alasan"}
+            </button>
+            {open && (
+                <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    {loading ? (
+                        <p className="text-xs text-slate-500">Memuat alasan...</p>
+                    ) : error ? (
+                        <p className="text-xs text-red-600">{error}</p>
+                    ) : !reasons || reasons.length === 0 ? (
+                        <p className="text-xs text-slate-500">Tidak ada alasan tertulis.</p>
+                    ) : (
+                        <ul className="space-y-2">
+                            {reasons.map((r) => (
+                                <li key={r.id} className="rounded-lg bg-white p-2 text-xs leading-5 text-slate-700 shadow-sm">
+                                    <p className="break-words">{r.reason}</p>
+                                    <p className="mt-1 text-[11px] text-slate-400">{formatDate(r.createdAt)}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function FeedbackOverview({ feedback, negativeFeedback }) {
     const total = feedback?.total ?? 0;
     const helpful = feedback?.helpful ?? 0;
     const notHelpful = feedback?.notHelpful ?? 0;
+    const persenTotal = hitungRasio({ total, helpful });
 
     return (
         <section className="mt-10">
             <div>
                 <h2 className="text-xl font-bold text-slate-900">
-                    Feedback FAQ
+                    Feedback
                 </h2>
                 <p className="mt-2 text-slate-600">
-                    Ringkasan masukan pengunjung terhadap jawaban FAQ.
+                    Ringkasan masukan pengunjung terhadap FAQ, panduan, dan tutorial.
                 </p>
             </div>
 
@@ -256,32 +366,112 @@ function FeedbackOverview({ feedback, negativeFaqs }) {
                 </div>
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                <div className="border-b border-slate-200 px-5 py-4">
-                    <h3 className="font-bold text-slate-900">FAQ yang perlu ditinjau</h3>
-                    <p className="mt-1 text-sm text-slate-600">Diurutkan dari jumlah feedback Tidak terbanyak.</p>
+            <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                        <p className="text-sm font-medium text-slate-600">
+                            Rasio feedback membantu
+                        </p>
+                        <p className="mt-2 text-3xl font-bold text-slate-900">
+                            {persenTotal}%
+                        </p>
+                    </div>
+                    <p className="text-sm text-slate-500">
+                        Target PRD: minimal 80%.
+                    </p>
                 </div>
-
-                {negativeFaqs.length === 0 ? (
-                    <EmptyRecent label="Belum ada feedback negatif." />
-                ) : (
-                    <ul className="divide-y divide-slate-200">
-                        {negativeFaqs.map((faq) => (
-                            <li key={faq.faqId} className="flex items-center justify-between gap-4 px-5 py-4">
-                                <p className="line-clamp-2 min-w-0 font-medium text-slate-900">{faq.question}</p>
-                                <div className="flex shrink-0 items-center gap-3">
-                                    <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
-                                        {faq.notHelpful} tidak membantu
-                                    </span>
-                                    <Link to={`/faqs/${faq.faqId}/edit`} className={editButtonClass} aria-label={`Edit ${faq.question}`}>
-                                        <Pencil size={17} aria-hidden="true" />
-                                    </Link>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+                <BarRasio persen={persenTotal} />
             </div>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                {feedbackGroups.map((group) => {
+                    const jenis = feedback?.byType?.[group.key] ?? rasioKosong;
+                    const persen = hitungRasio(jenis);
+                    const Icon = group.icon;
+
+                    return (
+                        <div
+                            key={group.key}
+                            className="rounded-2xl border border-slate-200 bg-white p-5"
+                        >
+                            <p className="inline-flex items-center gap-2 font-bold text-slate-900">
+                                <Icon size={18} aria-hidden="true" />
+                                {group.label}
+                            </p>
+                            <p className="mt-3 text-2xl font-bold text-slate-900">
+                                {jenis.total}
+                            </p>
+                            <p className="text-sm text-slate-500">total feedback</p>
+                            <p className="mt-3 text-sm text-slate-600">
+                                <span className="font-semibold text-emerald-700">
+                                    {jenis.helpful} membantu
+                                </span>{" · "}
+                                <span className="font-semibold text-rose-700">
+                                    {jenis.notHelpful} tidak
+                                </span>
+                            </p>
+                            <BarRasio persen={persen} />
+                        </div>
+                    );
+                })}
+            </div>
+
+            {feedbackGroups.map((group) => {
+                const items = negativeFeedback?.[group.key] ?? [];
+
+                return (
+                    <div
+                        key={group.key}
+                        className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                    >
+                        <div className="border-b border-slate-200 px-5 py-4">
+                            <h3 className="font-bold text-slate-900">
+                                {group.label} yang perlu ditinjau
+                            </h3>
+                            <p className="mt-1 text-sm text-slate-600">
+                                Diurutkan dari jumlah feedback Tidak membantu terbanyak.
+                            </p>
+                        </div>
+
+                        {items.length === 0 ? (
+                            <EmptyRecent label={group.emptyLabel} />
+                        ) : (
+                            <ul className="divide-y divide-slate-200">
+                                {items.map((item) => (
+                                    <li
+                                        key={item.contentId}
+                                        className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between"
+                                    >
+                                        <div className="min-w-0 flex-1">
+                                            <p className="line-clamp-2 font-medium text-slate-900">
+                                                {item.title}
+                                            </p>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                {item.notHelpful} dari {item.total} feedback tidak membantu
+                                            </p>
+                                            <ReasonList contentType={group.key} contentId={item.contentId} />
+                                        </div>
+
+                                        <div className="flex shrink-0 items-center gap-3 self-start">
+                                            <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-800">
+                                                {item.notHelpful} tidak membantu
+                                            </span>
+
+                                            <Link
+                                                to={group.editPath(item.contentId)}
+                                                className={editButtonClass}
+                                                aria-label={`Edit ${item.title}`}
+                                            >
+                                                <Pencil size={17} aria-hidden="true" />
+                                            </Link>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                );
+            })}
         </section>
     );
 }
@@ -401,7 +591,7 @@ export default function DashboardPage() {
         useState(null);
 
     const [feedback, setFeedback] = useState(null);
-    const [negativeFeedbackFaqs, setNegativeFeedbackFaqs] = useState([]);
+    const [negativeFeedback, setNegativeFeedback] = useState(null);
 
     const [activeTab, setActiveTab] =
         useState("faqs");
@@ -434,14 +624,19 @@ export default function DashboardPage() {
                 );
 
                 setFeedback(result?.data?.statistics?.feedback ?? null);
-                setNegativeFeedbackFaqs(result?.data?.negativeFeedbackFaqs ?? []);
+                setNegativeFeedback({
+                    faq: result?.data?.negativeFeedbackFaqs ?? [],
+                    guide: result?.data?.negativeFeedbackGuides ?? [],
+                    tutorial:
+                        result?.data?.negativeFeedbackTutorials ?? [],
+                });
             } catch (err) {
                 if (!active) return;
 
                 setStatistics(null);
                 setRecentContent(null);
                 setFeedback(null);
-                setNegativeFeedbackFaqs([]);
+                setNegativeFeedback(null);
                 setError(
                     err.message ||
                         "Gagal mengambil ringkasan dashboard."
@@ -572,7 +767,7 @@ export default function DashboardPage() {
 
                     <FeedbackOverview
                         feedback={feedback}
-                        negativeFaqs={negativeFeedbackFaqs}
+                        negativeFeedback={negativeFeedback}
                     />
                 </>
             )}

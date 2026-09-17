@@ -274,6 +274,41 @@ export const faqFeedback = pgTable(
     ],
 );
 
+/*
+ * Feedback untuk seluruh jenis konten (FAQ, panduan, tutorial).
+ *
+ * Referensinya polimorfik: `content_type` menentukan tabel mana yang
+ * dirujuk `content_id`, sehingga tidak bisa memakai foreign key. Keberadaan
+ * dan status terbit kontennya diperiksa di controller sebelum menyimpan.
+ * Batasan nilai `content_type` dijaga oleh CHECK constraint di migrasi
+ * 0005_add_content_feedback.sql.
+ *
+ * Tabel lama `faq_feedback` tidak lagi ditulis; isinya sudah dipindahkan
+ * ke tabel ini oleh migrasi yang sama.
+ */
+export const contentFeedback = pgTable(
+    "content_feedback",
+    {
+        id: serial("id").primaryKey(),
+
+        contentType: varchar("content_type", { length: 20 }).notNull(),
+
+        contentId: integer("content_id").notNull(),
+
+        isHelpful: boolean("is_helpful").notNull(),
+
+        reason: text("reason"),
+
+        createdAt: timestamp("created_at", { withTimezone: true })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("content_feedback_type_id_idx").on(table.contentType, table.contentId),
+        index("content_feedback_created_at_idx").on(table.createdAt),
+    ],
+);
+
 export const faqVersions = pgTable("faq_versions", {
     id: serial("id").primaryKey(),
     faqId: integer("faq_id").notNull().references(() => faqs.id, { onDelete: "cascade" }),
